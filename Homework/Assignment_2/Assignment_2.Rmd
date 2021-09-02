@@ -1,0 +1,206 @@
+---
+title: "Movie Night Analysis"
+author: Santiago Torres
+date: September 05, 2021
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: vignette
+params:
+    user:
+      label: "Enter DB UserName"
+      value: ""
+      input: text
+    pwd:
+      label: "Enter DB Password"
+      value: ""
+      input: password
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r include=FALSE}
+library(tidyverse)
+library(googlesheets4)
+library(devtools)
+library(RCurl)
+library(dplyr)
+library(lubridate)
+library(DBI)
+```
+
+### Movie Night
+
+For the past couple of months, a group of friends and I have been scheduling a virtual movie night as a group activity. After someone selected a movie, we would discuss and rate the movie and then store that rating in an offline Excel file. Eventually, one of our group decided to upload our data into a Google sheets document and we continued our process there, while adding metrics such as IMBD ratings and average group ratings. By pure luck, assignment 2 for Data607 involves inputting movie ratings into a SQL database, so I figured it would be a perfect opportunity to consolidate our data and learn how to set up a server for us to use for our movie nights.
+
+I've created a public copy simply for the use of this exercise. Ultimately, I hope to create a way for our group members to interact with my output in order to store our ratings.
+
+```{r}
+sheetslink <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjkE78uLem25GEQtzbvZgugAdJz-frrieRSCedT2zu4719tSnNHMqzCfEvtdjmnL5Jeag7LsJgTIEN/pub?gid=0&single=true&output=csv"
+
+movieratings <- data.frame(read.csv(url(sheetslink)))
+
+head(movieratings)
+
+```
+
+As you can see, this is pretty easy to understand when interacting with it personally, but not very normalized from a database point of vie and hard to maintain as we have to continually add a column each time someone joins.
+
+I mocked up my quick thought process behind how to normalize the dataset 
+
+![Imgur](https://i.imgur.com/4ePBHoi.jpg)
+
+Ultimately, we'll create 3 dataframes that we'll load into a sql database.  
+
+1. Person - all the people who have watched, along with date_joined.
+  + person_id
+  + name
+  + date_joined
+2. Movies - holds movie information and who picked it
+  + movie_id
+  + movie_name
+  + genre
+  + imbd_rating
+  + picked_by
+3. Ratings - holds the movie ratings
+  + movie
+  + person
+  + rating
+  
+  
+## Data Cleaning
+
+Start with some quick renaming and data selection.
+
+The last row and the last two columns are  just a summary metrics like a person's average rating so we'll remove that for now.
+
+```{r}
+last_row <- nrow(movieratings)
+last_column <- ncol(movieratings)
+
+movieratings <- movieratings[-last_row,-c(last_column-1,last_column)]
+
+movieratings <- movieratings %>% 
+    rename(c("date_watched"=Date,"movie_name"=Movie.,"imbd_rating"=IMDB.Rating.,"genre"=Genre.,"picked_by"=Picked.By.))
+
+#convert to date
+
+movieratings$date_watched <- mdy(movieratings$date_watched)
+
+```
+
+The ratings are not all the same datatype due to N/As from people not attending so we have to convert to numeric. we can ignore the warning errors as we want to have NAs for where people did not rate a movie. for now at least
+
+```{r}
+str(movieratings)
+movieratings[,6:length(movieratings)] <- sapply(movieratings[,6:length(movieratings)], as.numeric)
+```
+
+
+## Person
+
+Let's start with the easiest to set up - Person dataframe. 
+
+I know which columns to exclude to focus on only people names so that makes things slightly simpler #since we had : in the column names it leaves a period artifact when reading it in. this makes it wasier to identify first 5 columns are data
+
+```{r}
+colnames(movieratings)
+
+people <- colnames(movieratings)
+people <- people[6:length(people)]
+
+people <- data.frame(first_name = people, stringsAsFactors = FALSE)
+```
+
+
+
+## Movies 
+
+Data is already mostly cleaned up, we just have to select the columns we care about and drop the rest. we know it's just the first five columns
+
+```{r}
+movies <- movieratings[c(1:5)]
+
+movies
+```
+
+## Ratings
+
+This seems more complicated as the data itself is in a flat table, but we simply just transpose the people columns to get their ratings and keep the movie_name
+https://stackoverflow.com/questions/36136742/transpose-only-certain-columns-in-data-frame and https://tidyr.tidyverse.org/reference/pivot_longer.html
+
+we want to drop NA ratings as they are not actually datapoints - we can simply infer attendance from the existence of a rating or not.
+
+```{r}
+ratings <- movieratings[c(2, 6:length(movieratings))]
+ratings <- ratings %>% pivot_longer(!movie_name, names_to = "first_name", values_to = "rating")
+head(ratings)
+
+find_na <- is.na(ratings$rating)
+
+#remove nas
+
+ratings <- ratings[!find_na,]
+
+head(ratings)
+```
+
+
+I realized I want to add the date someone joined to the person table so I have to do some quick calculations
+
+```{r}
+date_joined <- movieratings[c(1, 6:length(movieratings))]
+date_joined <- date_joined %>% pivot_longer(!date_watched, names_to = "first_name", values_to = "rating")
+
+#find first non-na rating
+people  <-  date_joined %>% filter(!is.na(rating)) %>% group_by(first_name) %>% summarise(date_joined = min(date_watched)) %>% arrange(date_joined)
+people
+```
+
+
+we now have
+
+## SQL
+
+
+Connect to my Azure Database
+```{r}
+con <- dbConnect(odbc::odbc(), Driver = "SQL Server", server = "tcp:movienightsqlsrv.database.windows.net,1433",Database="movienightsqldb",UID=params$user,PWD=params$pwd)
+```
+
+Create the tables based on the data we've manipulated _**__note that eval = FALSE as I do not want to re-create the tables__
+
+```{r eval = FALSE}
+dbWriteTable(con, "watchers", people)
+dbWriteTable(con, "ratings", ratings)
+dbWriteTable(con, "movies", movies)
+```
+
+
+
+
+## read back into R
+```{r}
+sql_watchers <- dbGetQuery(con, "SELECT * FROM watchers")
+sql_ratings <- dbGetQuery(con, "SELECT * FROM ratings")
+sql_movies <- dbGetQuery(con, "SELECT * FROM movies")
+
+```
+
+## Summary statistics
+
+Just some quick stats
+
+```{r}
+movie_group <- sql_ratings %>% group_by(movie_name)
+people_ratings <- sql_ratings %>% group_by(first_name)
+
+mean_rating <- movie_group %>% summarise(avg_rating = mean(rating)) %>% arrange(avg_rating)
+mean_rating
+
+people_ratings %>% summarise(rating = mean(rating), movies_watched = n())
+
+#join movies to mean_rating and compare to imbd
+```

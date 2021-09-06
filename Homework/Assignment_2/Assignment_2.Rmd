@@ -6,21 +6,13 @@ output:
   prettydoc::html_pretty:
     theme: cayman
     highlight: vignette
-params:
-    user:
-      label: "Enter DB UserName"
-      value: ""
-      input: text
-    pwd:
-      label: "Enter DB Password"
-      value: ""
-      input: password
-  
+    keep_md: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
 ```{r include=FALSE}
 library(tidyverse)
 library(googlesheets4)
@@ -33,7 +25,7 @@ library(DBI)
 
 ### Movie Night
 
-For the past couple of months, a group of friends and I have been scheduling a virtual movie night as a group activity. After someone selected a movie, we would discuss and rate the movie and then store that rating in an offline Excel file. Eventually, one of our group decided to upload our data into a Google sheets document and we continued our process there, while adding metrics such as IMBD ratings and average group ratings. By pure luck, assignment 2 for Data607 involves inputting movie ratings into a SQL database, so I figured it would be a perfect opportunity to consolidate our data and learn how to set up a server for us to use for our movie nights.
+For the past couple of months, a group of friends and I have been scheduling a virtual movie night as a group activity. After someone selected a movie, we would discuss and rate the movie and then store that rating in an offline Excel file. Eventually, one of our group decided to upload our data into a Google sheets document and we continued our process there, while adding metrics such as IMBD ratings and average group ratings. By pure luck, assignment 2 for Data607 involves inputting movie ratings into a SQL database, so I figured it would be a perfect opportunity to consolidate our data and learn how to set up a server on Microsoft Azure.
 
 I've created a public copy simply for the use of this exercise. Ultimately, I hope to create a way for our group members to interact with my output in order to store our ratings.
 
@@ -42,11 +34,11 @@ sheetslink <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjkE78uLem25GEQt
 
 movieratings <- data.frame(read.csv(url(sheetslink)))
 
-head(movieratings)
+print(head(movieratings), width =16)
 
 ```
 
-As you can see, this is pretty easy to understand when interacting with it personally, but not very normalized from a database point of vie and hard to maintain as we have to continually add a column each time someone joins.
+This is straightforward to understand when interacting with it personally, but not normalized from a database point of view and hard to maintain as we have to continually add a column each time someone joins.
 
 I mocked up my quick thought process behind how to normalize the dataset 
 
@@ -54,18 +46,17 @@ I mocked up my quick thought process behind how to normalize the dataset
 
 Ultimately, we'll create 3 dataframes that we'll load into a sql database.  
 
-1. Person - all the people who have watched, along with date_joined.
-  + person_id
-  + name
+1. People - all the people who have watched, along with date_joined.
+  + first_name
   + date_joined
 2. Movies - holds movie information and who picked it
-  + movie_id
+  + date_watched
   + movie_name
-  + genre
   + imbd_rating
+  + genre
   + picked_by
 3. Ratings - holds the movie ratings
-  + movie
+  + movie_name
   + person
   + rating
   
@@ -91,7 +82,7 @@ movieratings$date_watched <- mdy(movieratings$date_watched)
 
 ```
 
-The ratings are not all the same datatype due to N/As from people not attending so we have to convert to numeric. we can ignore the warning errors as we want to have NAs for where people did not rate a movie. for now at least
+The ratings are not all the same datatype due to N/As from people not attending so we have to convert to numeric. we can ignore the warning errors as we want to have NAs for where people did not rate a movie to avoid introducing zeros into any summary statistics.
 
 ```{r}
 str(movieratings)
@@ -103,7 +94,7 @@ movieratings[,6:length(movieratings)] <- sapply(movieratings[,6:length(movierati
 
 Let's start with the easiest to set up - Person dataframe. 
 
-I know which columns to exclude to focus on only people names so that makes things slightly simpler #since we had : in the column names it leaves a period artifact when reading it in. this makes it wasier to identify first 5 columns are data
+I know which columns to exclude to focus on only people names so that makes things slightly simpler
 
 ```{r}
 colnames(movieratings)
@@ -128,10 +119,11 @@ movies
 
 ## Ratings
 
-This seems more complicated as the data itself is in a flat table, but we simply just transpose the people columns to get their ratings and keep the movie_name
-https://stackoverflow.com/questions/36136742/transpose-only-certain-columns-in-data-frame and https://tidyr.tidyverse.org/reference/pivot_longer.html
+This seems more complicated as the data itself is in a flat table, but we simply just transpose the people columns to get their ratings and keep the movie_name I used the following links for some guidance: 
 
-we want to drop NA ratings as they are not actually datapoints - we can simply infer attendance from the existence of a rating or not.
+[StackOverflow](https://stackoverflow.com/questions/36136742/transpose-only-certain-columns-in-data-frame) and [Tidyverse Docs](https://tidyr.tidyverse.org/reference/pivot_longer.html)
+
+we want to drop NA ratings as they are not actually data points - we can simply infer attendance from the existence of a rating or not.
 
 ```{r}
 ratings <- movieratings[c(2, 6:length(movieratings))]
@@ -148,7 +140,7 @@ head(ratings)
 ```
 
 
-I realized I want to add the date someone joined to the person table so I have to do some quick calculations
+I realized I want to add the date someone joined to the person table so I have to do some quick manipulation
 
 ```{r}
 date_joined <- movieratings[c(1, 6:length(movieratings))]
@@ -160,17 +152,29 @@ people
 ```
 
 
-we now have
+we now have our preliminary tables! Time to set up the Azure database.
 
 ## SQL
 
+After creating an Azure account and setting it up on the Azure portal, we now have to connect through R.
 
-Connect to my Azure Database
+###Connect to my Azure Database
+
+I grab credentials from my keyring using the keyring package in r.
+
 ```{r}
-con <- dbConnect(odbc::odbc(), Driver = "SQL Server", server = "tcp:movienightsqlsrv.database.windows.net,1433",Database="movienightsqldb",UID=params$user,PWD=params$pwd)
+username <- keyring::key_list("movienightdb")[1,2]
+password <- keyring::key_get("movienightdb", username)
+server <- keyring::key_list("movienightserver")[1,2]
 ```
 
-Create the tables based on the data we've manipulated _**__note that eval = FALSE as I do not want to re-create the tables__
+
+```{r}
+con <- dbConnect(odbc::odbc(), Driver = "SQL Server", server = server,Database="movienightsqldb",UID=username
+,PWD=password)
+```
+
+Create the tables based on the data we've manipulated **note that eval = FALSE as I do not want to re-create the tables**
 
 ```{r eval = FALSE}
 dbWriteTable(con, "watchers", people)
@@ -200,7 +204,9 @@ people_ratings <- sql_ratings %>% group_by(first_name)
 mean_rating <- movie_group %>% summarise(avg_rating = mean(rating)) %>% arrange(avg_rating)
 mean_rating
 
-people_ratings %>% summarise(rating = mean(rating), movies_watched = n())
-
-#join movies to mean_rating and compare to imbd
+people_ratings %>% summarise(rating = mean(rating), movies_watched = n()) %>% arrange(desc(rating))
 ```
+
+Looks like I am definitely a lenient rater compared to most of my friends and the worst movie we've watched so far is _The Suicide Squad_
+
+I hope to continue to expand on this throughout the semester with any new tools we learn.

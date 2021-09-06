@@ -173,98 +173,28 @@ code span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb1-2"><a href="#cb1-2"></a></span>
 <span id="cb1-3"><a href="#cb1-3"></a>movieratings &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="kw">read.csv</span>(<span class="kw">url</span>(sheetslink)))</span>
 <span id="cb1-4"><a href="#cb1-4"></a></span>
-<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">print</span>(<span class="kw">head</span>(movieratings), <span class="dt">width =</span><span class="dv">16</span>)</span></code></pre></div>
-<pre><code>##        Date
-## 1  4/5/2021
-## 2 4/12/2021
-## 3 4/20/2021
-## 4 4/26/2021
-## 5  5/3/2021
-## 6 5/10/2021
-##                Movie.
-## 1 The Death of Stalin
-## 2        Interstellar
-## 3            Parasite
-## 4       Spirited Away
-## 5           Midsommar
-## 6          Knives Out
-##   IMDB.Rating.
-## 1          7.3
-## 2          8.6
-## 3          8.6
-## 4          8.6
-## 5          7.1
-## 6          7.9
-##                         Genre.
-## 1       Comedy, Drama, History
-## 2     Adventure, Drama, Sci-Fi
-## 3      Comedy, Drama, Thriller
-## 4 Animation, Adventure, Family
-## 5       Drama, Horror, Mystery
-## 6         Comedy, Crime, Drama
-##   Picked.By.
-## 1   Jonathan
-## 2      Mason
-## 3      Bobby
-## 4      Danny
-## 5   Santiago
-## 6   Jonathan
-##   Jonathan
-## 1        7
-## 2        8
-## 3       10
-## 4       10
-## 5        6
-## 6       10
-##   Mason Bobby
-## 1     7     7
-## 2    10    10
-## 3    10    10
-## 4     9     8
-## 5   N/A     8
-## 6    10     9
-##   Danny
-## 1     7
-## 2     8
-## 3     9
-## 4     9
-## 5     7
-## 6     9
-##   Santiago
-## 1      N/A
-## 2       10
-## 3        8
-## 4        8
-## 5        8
-## 6       10
-##   Jacob Joshy
-## 1   N/A   N/A
-## 2    10   N/A
-## 3   N/A   N/A
-## 4   N/A   N/A
-## 5   N/A   N/A
-## 6     9   N/A
-##   Colby Juan
-## 1   N/A  N/A
-## 2   N/A  N/A
-## 3   N/A  N/A
-## 4   N/A  N/A
-## 5   N/A  N/A
-## 6   N/A  N/A
-##   Average.
-## 1     7.00
-## 2     9.33
-## 3     9.40
-## 4     8.80
-## 5     7.25
-## 6     9.50
-##   Rating.Deviation.
-## 1             -0.30
-## 2              0.73
-## 3              0.80
-## 4              0.20
-## 5              0.15
-## 6              1.60</code></pre>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">print</span>(<span class="kw">head</span>(movieratings))</span></code></pre></div>
+<pre><code>##        Date              Movie. IMDB.Rating.                       Genre.
+## 1  4/5/2021 The Death of Stalin          7.3       Comedy, Drama, History
+## 2 4/12/2021        Interstellar          8.6     Adventure, Drama, Sci-Fi
+## 3 4/20/2021            Parasite          8.6      Comedy, Drama, Thriller
+## 4 4/26/2021       Spirited Away          8.6 Animation, Adventure, Family
+## 5  5/3/2021           Midsommar          7.1       Drama, Horror, Mystery
+## 6 5/10/2021          Knives Out          7.9         Comedy, Crime, Drama
+##   Picked.By. Jonathan Mason Bobby Danny Santiago Jacob Joshy Colby Juan
+## 1   Jonathan        7     7     7     7      N/A   N/A   N/A   N/A  N/A
+## 2      Mason        8    10    10     8       10    10   N/A   N/A  N/A
+## 3      Bobby       10    10    10     9        8   N/A   N/A   N/A  N/A
+## 4      Danny       10     9     8     9        8   N/A   N/A   N/A  N/A
+## 5   Santiago        6   N/A     8     7        8   N/A   N/A   N/A  N/A
+## 6   Jonathan       10    10     9     9       10     9   N/A   N/A  N/A
+##   Average. Rating.Deviation.
+## 1     7.00             -0.30
+## 2     9.33              0.73
+## 3     9.40              0.80
+## 4     8.80              0.20
+## 5     7.25              0.15
+## 6     9.50              1.60</code></pre>
 <p>This is straightforward to understand when interacting with it personally, but not normalized from a database point of view and hard to maintain as we have to continually add a column each time someone joins.</p>
 <p>I mocked up my quick thought process behind how to normalize the dataset</p>
 <div class="figure">

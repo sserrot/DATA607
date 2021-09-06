@@ -34,7 +34,7 @@ sheetslink <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjkE78uLem25GEQt
 
 movieratings <- data.frame(read.csv(url(sheetslink)))
 
-print(head(movieratings), width =16)
+print(head(movieratings))
 
 ```
 

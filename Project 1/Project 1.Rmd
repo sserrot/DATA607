@@ -1,0 +1,55 @@
+---
+title: "Project 1"
+author: Santiago Torres
+date: September 19, 2021
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: vignette
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+chess_elo <- read.csv("https://raw.githubusercontent.com/sserrot/DATA607/main/Project%201/tournamentinfo.txt")
+summary(chess_elo)
+chess_elo <- chess_elo %>% str_split("-----------------------------------------------------------------------------------------")
+chess_elo <- chess_elo[[1]]
+chess_elo <- chess_elo %>% str_split(",")
+chess_elo_header <- chess_elo[1]
+chess_elo_players <- chess_elo[2:length(chess_elo)]
+```
+
+```{r headers}
+#headers
+chess_elo_header_row1 <- chess_elo_header[[1]][1] %>% str_split("\\|")
+chess_elo_header_row1 <- chess_elo_header_row1[[1]] %>% trimws()
+
+chess_elo_header_row2 <- chess_elo_header[[1]][2] %>% str_split("\\|")
+chess_elo_header_row2 <- chess_elo_header_row2[[1]] %>% trimws()
+
+#function to read each row and store in a dataframe
+name <- function(variables) { 
+  
+  
+}
+```
+
+```{r players}
+#split players 
+#chess_elo_players[[1]][2]
+# name_list %>% str_split("\\|") %>% trimws()
+#chess_elo_players[[1]][3] row2
+```
+

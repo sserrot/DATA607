@@ -322,19 +322,17 @@ a.sourceLine {
 <div id="extra-credit" class="section level2">
 <h2>Extra Credit</h2>
 <p>Expected points difference</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>tournament_df[<span class="fu">which.max</span>(tournament_df<span class="sc">$</span>expected_points_difference),] <span class="sc">%&gt;%</span> <span class="fu">select</span>(player_number, player_name, player_points, expected_points, rating_change, expected_points_difference)</span></code></pre></div>
-<pre><code>## # A tibble: 1 x 6
-##   player_number player_name  player_points expected_points rating_change
-##   &lt;chr&gt;         &lt;chr&gt;                &lt;dbl&gt;           &lt;dbl&gt;         &lt;dbl&gt;
-## 1 3             ADITYA BAJAJ             6             1.9           256
-## # ... with 1 more variable: expected_points_difference &lt;dbl&gt;</code></pre>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>tournament_df[<span class="fu">which.max</span>(tournament_df<span class="sc">$</span>expected_points_difference),] <span class="sc">%&gt;%</span> <span class="fu">select</span>(player_name, player_points, expected_points, rating_change, expected_points_difference)</span></code></pre></div>
+<pre><code>## # A tibble: 1 x 5
+##   player_name  player_points expected_points rating_change expected_points_diff~
+##   &lt;chr&gt;                &lt;dbl&gt;           &lt;dbl&gt;         &lt;dbl&gt;                 &lt;dbl&gt;
+## 1 ADITYA BAJAJ             6             1.9           256                   4.1</code></pre>
 <p>However based off of actual rating change it would be:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>tournament_df[<span class="fu">which.max</span>(tournament_df<span class="sc">$</span>rating_change),] <span class="sc">%&gt;%</span> <span class="fu">select</span>(player_number, player_name, player_points, expected_points, rating_change, expected_points_difference)</span></code></pre></div>
-<pre><code>## # A tibble: 1 x 6
-##   player_number player_name          player_points expected_points rating_change
-##   &lt;chr&gt;         &lt;chr&gt;                        &lt;dbl&gt;           &lt;dbl&gt;         &lt;dbl&gt;
-## 1 46            JACOB ALEXANDER LAV~             3           0.043           699
-## # ... with 1 more variable: expected_points_difference &lt;dbl&gt;</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>tournament_df[<span class="fu">which.max</span>(tournament_df<span class="sc">$</span>rating_change),] <span class="sc">%&gt;%</span> <span class="fu">select</span>(player_name, player_points, expected_points, rating_change, expected_points_difference)</span></code></pre></div>
+<pre><code>## # A tibble: 1 x 5
+##   player_name     player_points expected_points rating_change expected_points_d~
+##   &lt;chr&gt;                   &lt;dbl&gt;           &lt;dbl&gt;         &lt;dbl&gt;              &lt;dbl&gt;
+## 1 JACOB ALEXANDE~             3           0.043           699               2.96</code></pre>
 </div>
 <div id="csv-output" class="section level2">
 <h2>CSV Output</h2>

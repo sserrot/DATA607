@@ -257,28 +257,26 @@ Expected points difference
 
 
 ```r
-tournament_df[which.max(tournament_df$expected_points_difference),] %>% select(player_number, player_name, player_points, expected_points, rating_change, expected_points_difference)
+tournament_df[which.max(tournament_df$expected_points_difference),] %>% select(player_name, player_points, expected_points, rating_change, expected_points_difference)
 ```
 
 ```
-## # A tibble: 1 x 6
-##   player_number player_name  player_points expected_points rating_change
-##   <chr>         <chr>                <dbl>           <dbl>         <dbl>
-## 1 3             ADITYA BAJAJ             6             1.9           256
-## # ... with 1 more variable: expected_points_difference <dbl>
+## # A tibble: 1 x 5
+##   player_name  player_points expected_points rating_change expected_points_diff~
+##   <chr>                <dbl>           <dbl>         <dbl>                 <dbl>
+## 1 ADITYA BAJAJ             6             1.9           256                   4.1
 ```
 However based off of actual rating change it would be:
 
 ```r
-tournament_df[which.max(tournament_df$rating_change),] %>% select(player_number, player_name, player_points, expected_points, rating_change, expected_points_difference)
+tournament_df[which.max(tournament_df$rating_change),] %>% select(player_name, player_points, expected_points, rating_change, expected_points_difference)
 ```
 
 ```
-## # A tibble: 1 x 6
-##   player_number player_name          player_points expected_points rating_change
-##   <chr>         <chr>                        <dbl>           <dbl>         <dbl>
-## 1 46            JACOB ALEXANDER LAV~             3           0.043           699
-## # ... with 1 more variable: expected_points_difference <dbl>
+## # A tibble: 1 x 5
+##   player_name     player_points expected_points rating_change expected_points_d~
+##   <chr>                   <dbl>           <dbl>         <dbl>              <dbl>
+## 1 JACOB ALEXANDE~             3           0.043           699               2.96
 ```
 
 

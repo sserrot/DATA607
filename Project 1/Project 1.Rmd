@@ -75,7 +75,7 @@ for(player in chess_elo_players) {
   if(any(!is.na(first_line)) == TRUE){
     player_number <- c(player_number, first_line[1] %>% str_extract("[0-9]+"))
     player_name <- c(player_name, first_line[2] %>% trimws())
-    player_points <- c(player_points, first_line[3] %>% trimws())
+    player_points <- c(player_points, first_line[3] %>% trimws() %>% as.numeric())
     }
   
   second_line <- player[3] %>% str_split("\\|") %>% unlist()
@@ -102,6 +102,7 @@ Now we have a dataframe of all the original data:
 ```{r}
 head(tournament_df, n=9)
 ```
+## Tournament Analysis
 
 However, we want to calculate an average of all the player's opponents chess ratings. 
 There are many different ways to approach this issue. I chose to simply 
@@ -112,32 +113,58 @@ There are many different ways to approach this issue. I chose to simply
 
 We have to be sure to ignore NAs for those players that played less than 7 rounds.
 
+We can also take the player opponent chess ratings and calculate the expected outcome
+Using the formula from the [Wikipedia Elo page](https://en.wikipedia.org/wiki/Elo_rating_system#Mathematical_details), we can calculate the expected value as below:
+
+`Player 1 Expected Rating = 1 / 1 + 10 ^ [(OppRating - Rating) / 400]
+
+```{r}
+elo_calc <- function(opponent_elo, player_elo) {
+  expected_outcome <- 1 / (1+ 10^((opponent_elo - player_elo)/400))
+  return(expected_outcome)
+}
+
+#test function
+elo_calc(1400, 1000) # expected outcome of a player with rating 1000 against rating 1400 (win = 1, draw = .5, loss = 0)
+
+```
 
 ```{r}
 ## redo players for just games to get average since we got all the prechess ratings linked to players now
 average_opponent_rating <- c()
+expected_points <- c()
 for (player in chess_elo_players) {
   rating_list <- c()
   
   games_played <- player[2] %>% str_split("\\|") %>% unlist()
+  player_number <- games_played[1] %>% str_extract("[0-9]+") %>% as.numeric() # for elo calculation
+  
   games_played <- games_played[4:10]
   slice <- games_played %>% str_extract("[0-9]+") %>% as.numeric()
   rating_list <- tournament_df$pre_tournament_rating[slice]
-  rating_list <- rating_list[!is.na(rating_list)] %>% as.numeric()
+  rating_list <- rating_list[!is.na(rating_list)] %>% as.numeric() # list of opponent ratings
   average_opponent_rating <- c(average_opponent_rating, mean(rating_list))
+  
+  # for elo calculation - expected outcomes
+  expected_points <- c(expected_points, sapply(rating_list, elo_calc, player_elo=tournament_df$pre_tournament_rating[player_number]) %>% unlist() %>% sum() %>% format(digits = 2) %>% as.numeric())
 }
 
 # round elo and remove na at the end
 
 average_opponent_rating <- average_opponent_rating[!is.na(average_opponent_rating)] %>% round()
+expected_points <- expected_points[!expected_points==0]
 
 tournament_df <- tournament_df %>% add_column(average_opponent_rating)
+
+tournament_df <- tournament_df %>% add_column(expected_points)
 
 glimpse(tournament_df)
 ```
 
 
 ```{r graphs_variables}
+
+tournament_df <- tournament_df %>% mutate(expected_points_difference = as.numeric(format(player_points - expected_points, digits = 2)))
 
 tournament_df <- tournament_df %>% mutate(rating_change = post_tournament_rating - pre_tournament_rating)
 
@@ -158,10 +185,21 @@ tournament_df %>% ggplot(aes(x = player_number, y = rating_change, color = ratin
 
 
 tournament_df %>% ggplot(aes(x = player_number, y = rating_comparison, color = rating_comp_type)) + geom_col() +ggtitle("Rating vs Opponent Average Rating") +theme(plot.title = element_text(hjust = 0.5), axis.text.x=element_blank())
-
-
-
 ```
+
+
+## Extra Credit
+
+Expected points difference
+
+```{r}
+tournament_df[which.max(tournament_df$expected_points_difference),] %>% select(player_number, player_name, player_points, expected_points, rating_change, expected_points_difference)
+```
+However based off of actual rating change it would be:
+```{r}
+tournament_df[which.max(tournament_df$rating_change),] %>% select(player_number, player_name, player_points, expected_points, rating_change, expected_points_difference)
+```
+
 
 ## CSV Output
 

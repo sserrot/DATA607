@@ -98,7 +98,7 @@ for(player in chess_elo_players) {
   if(any(!is.na(first_line)) == TRUE){
     player_number <- c(player_number, first_line[1] %>% str_extract("[0-9]+"))
     player_name <- c(player_name, first_line[2] %>% trimws())
-    player_points <- c(player_points, first_line[3] %>% trimws())
+    player_points <- c(player_points, first_line[3] %>% trimws() %>% as.numeric())
     }
   
   second_line <- player[3] %>% str_split("\\|") %>% unlist()
@@ -130,18 +130,19 @@ head(tournament_df, n=9)
 ```
 ## # A tibble: 9 x 6
 ##   player_number player_name         player_state player_points pre_tournament_r~
-##   <chr>         <chr>               <chr>        <chr>                     <dbl>
-## 1 1             GARY HUA            ON           6.0                        1794
-## 2 2             DAKSHESH DARURI     MI           6.0                        1553
-## 3 3             ADITYA BAJAJ        MI           6.0                        1384
-## 4 4             PATRICK H SCHILLING MI           5.5                        1716
-## 5 5             HANSHI ZUO          MI           5.5                        1655
-## 6 6             HANSEN SONG         OH           5.0                        1686
-## 7 7             GARY DEE SWATHELL   MI           5.0                        1649
-## 8 8             EZEKIEL HOUGHTON    MI           5.0                        1641
-## 9 9             STEFANO LEE         ON           5.0                        1411
+##   <chr>         <chr>               <chr>                <dbl>             <dbl>
+## 1 1             GARY HUA            ON                     6                1794
+## 2 2             DAKSHESH DARURI     MI                     6                1553
+## 3 3             ADITYA BAJAJ        MI                     6                1384
+## 4 4             PATRICK H SCHILLING MI                     5.5              1716
+## 5 5             HANSHI ZUO          MI                     5.5              1655
+## 6 6             HANSEN SONG         OH                     5                1686
+## 7 7             GARY DEE SWATHELL   MI                     5                1649
+## 8 8             EZEKIEL HOUGHTON    MI                     5                1641
+## 9 9             STEFANO LEE         ON                     5                1411
 ## # ... with 1 more variable: post_tournament_rating <dbl>
 ```
+## Tournament Analysis
 
 However, we want to calculate an average of all the player's opponents chess ratings. 
 There are many different ways to approach this issue. I chose to simply 
@@ -152,46 +153,77 @@ There are many different ways to approach this issue. I chose to simply
 
 We have to be sure to ignore NAs for those players that played less than 7 rounds.
 
+We can also take the player opponent chess ratings and calculate the expected outcome
+Using the formula from the [Wikipedia Elo page](https://en.wikipedia.org/wiki/Elo_rating_system#Mathematical_details), we can calculate the expected value as below:
+
+`Player 1 Expected Rating = 1 / 1 + 10 ^ [(OppRating - Rating) / 400]
+
+
+```r
+elo_calc <- function(opponent_elo, player_elo) {
+  expected_outcome <- 1 / (1+ 10^((opponent_elo - player_elo)/400))
+  return(expected_outcome)
+}
+
+#test function
+elo_calc(1400, 1000) # expected outcome of a player with rating 1000 against rating 1400 (win = 1, draw = .5, loss = 0)
+```
+
+```
+## [1] 0.09090909
+```
 
 
 ```r
 ## redo players for just games to get average since we got all the prechess ratings linked to players now
 average_opponent_rating <- c()
+expected_points <- c()
 for (player in chess_elo_players) {
   rating_list <- c()
   
   games_played <- player[2] %>% str_split("\\|") %>% unlist()
+  player_number <- games_played[1] %>% str_extract("[0-9]+") %>% as.numeric() # for elo calculation
+  
   games_played <- games_played[4:10]
   slice <- games_played %>% str_extract("[0-9]+") %>% as.numeric()
   rating_list <- tournament_df$pre_tournament_rating[slice]
-  rating_list <- rating_list[!is.na(rating_list)] %>% as.numeric()
+  rating_list <- rating_list[!is.na(rating_list)] %>% as.numeric() # list of opponent ratings
   average_opponent_rating <- c(average_opponent_rating, mean(rating_list))
+  
+  # for elo calculation - expected outcomes
+  expected_points <- c(expected_points, sapply(rating_list, elo_calc, player_elo=tournament_df$pre_tournament_rating[player_number]) %>% unlist() %>% sum() %>% format(digits = 2) %>% as.numeric())
 }
 
 # round elo and remove na at the end
 
 average_opponent_rating <- average_opponent_rating[!is.na(average_opponent_rating)] %>% round()
+expected_points <- expected_points[!expected_points==0]
 
 tournament_df <- tournament_df %>% add_column(average_opponent_rating)
+
+tournament_df <- tournament_df %>% add_column(expected_points)
 
 glimpse(tournament_df)
 ```
 
 ```
 ## Rows: 64
-## Columns: 7
+## Columns: 8
 ## $ player_number           <chr> "1", "2", "3", "4", "5", "6", "7", "8", "9", "~
 ## $ player_name             <chr> "GARY HUA", "DAKSHESH DARURI", "ADITYA BAJAJ",~
 ## $ player_state            <chr> "ON", "MI", "MI", "MI", "MI", "OH", "MI", "MI"~
-## $ player_points           <chr> "6.0", "6.0", "6.0", "5.5", "5.5", "5.0", "5.0~
+## $ player_points           <dbl> 6.0, 6.0, 6.0, 5.5, 5.5, 5.0, 5.0, 5.0, 5.0, 5~
 ## $ pre_tournament_rating   <dbl> 1794, 1553, 1384, 1716, 1655, 1686, 1649, 1641~
 ## $ post_tournament_rating  <dbl> 1817, 1663, 1640, 1744, 1690, 1687, 1673, 1657~
 ## $ average_opponent_rating <dbl> 1605, 1469, 1564, 1574, 1501, 1519, 1372, 1468~
+## $ expected_points         <dbl> 5.2, 3.8, 1.9, 4.7, 4.4, 4.9, 4.6, 5.0, 2.3, 1~
 ```
 
 
 
 ```r
+tournament_df <- tournament_df %>% mutate(expected_points_difference = as.numeric(format(player_points - expected_points, digits = 2)))
+
 tournament_df <- tournament_df %>% mutate(rating_change = post_tournament_rating - pre_tournament_rating)
 
 tournament_df <- tournament_df %>%
@@ -217,6 +249,38 @@ tournament_df %>% ggplot(aes(x = player_number, y = rating_comparison, color = r
 ```
 
 ![](Project-1_files/figure-html/graphs-2.png)<!-- -->
+
+
+## Extra Credit
+
+Expected points difference
+
+
+```r
+tournament_df[which.max(tournament_df$expected_points_difference),] %>% select(player_number, player_name, player_points, expected_points, rating_change, expected_points_difference)
+```
+
+```
+## # A tibble: 1 x 6
+##   player_number player_name  player_points expected_points rating_change
+##   <chr>         <chr>                <dbl>           <dbl>         <dbl>
+## 1 3             ADITYA BAJAJ             6             1.9           256
+## # ... with 1 more variable: expected_points_difference <dbl>
+```
+However based off of actual rating change it would be:
+
+```r
+tournament_df[which.max(tournament_df$rating_change),] %>% select(player_number, player_name, player_points, expected_points, rating_change, expected_points_difference)
+```
+
+```
+## # A tibble: 1 x 6
+##   player_number player_name          player_points expected_points rating_change
+##   <chr>         <chr>                        <dbl>           <dbl>         <dbl>
+## 1 46            JACOB ALEXANDER LAV~             3           0.043           699
+## # ... with 1 more variable: expected_points_difference <dbl>
+```
+
 
 ## CSV Output
 

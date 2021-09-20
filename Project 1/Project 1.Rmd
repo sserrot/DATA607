@@ -106,9 +106,9 @@ head(tournament_df, n=9)
 However, we want to calculate an average of all the player's opponents chess ratings. 
 There are many different ways to approach this issue. I chose to simply 
 
-  1 go through all the games played which is represented by a player number
-  2 Replace the player number with the player ranking
-  3 Calculate the average rating for those games
+  1. Go through all the games played which is represented by a player number  
+  2. Replace the player number with the player ranking  
+  3. Calculate the average rating for those games  
 
 We have to be sure to ignore NAs for those players that played less than 7 rounds.
 
@@ -137,17 +137,37 @@ glimpse(tournament_df)
 ```
 
 
-```{r graphs}
+```{r graphs_variables}
 
-tournament_df %>% ggplot(aes(x = player_number, y = (post_tournament_rating - pre_tournament_rating))) + geom_point()
+tournament_df <- tournament_df %>% mutate(rating_change = post_tournament_rating - pre_tournament_rating)
 
+tournament_df <- tournament_df %>%
+  mutate(rating_change_type = ifelse(rating_change > 0, "increase", "decrease"))
 
-tournament_df %>% ggplot(aes(x = player_number, y = (post_tournament_rating - average_opponent_rating))) + geom_point()
+tournament_df <- tournament_df %>% mutate(rating_comparison = pre_tournament_rating - average_opponent_rating)
+
+tournament_df <- tournament_df %>%
+  mutate(rating_comp_type = ifelse(rating_comparison > 0, "above", "below"))
 
 ```
-# CSV Output
 
-output results to csv
+## Rating Change and Rating Comparison
+
+```{r graphs}
+tournament_df %>% ggplot(aes(x = player_number, y = rating_change, color = rating_change_type)) + geom_col() +ggtitle("Rating Change") +theme(plot.title = element_text(hjust = 0.5), axis.text.x=element_blank())
+
+
+tournament_df %>% ggplot(aes(x = player_number, y = rating_comparison, color = rating_comp_type)) + geom_col() +ggtitle("Rating vs Opponent Average Rating") +theme(plot.title = element_text(hjust = 0.5), axis.text.x=element_blank())
+
+
+
+```
+
+## CSV Output
+
+
+Output results to csv  
+
 ```{r}
 tournament_df %>% write.csv("Tournament Players.csv", row.names = FALSE)
 ```

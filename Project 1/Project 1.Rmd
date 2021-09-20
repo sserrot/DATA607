@@ -193,11 +193,11 @@ tournament_df %>% ggplot(aes(x = player_number, y = rating_comparison, color = r
 Expected points difference
 
 ```{r}
-tournament_df[which.max(tournament_df$expected_points_difference),] %>% select(player_number, player_name, player_points, expected_points, rating_change, expected_points_difference)
+tournament_df[which.max(tournament_df$expected_points_difference),] %>% select(player_name, player_points, expected_points, rating_change, expected_points_difference)
 ```
 However based off of actual rating change it would be:
 ```{r}
-tournament_df[which.max(tournament_df$rating_change),] %>% select(player_number, player_name, player_points, expected_points, rating_change, expected_points_difference)
+tournament_df[which.max(tournament_df$rating_change),] %>% select(player_name, player_points, expected_points, rating_change, expected_points_difference)
 ```
 
 

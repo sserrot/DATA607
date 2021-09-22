@@ -259,19 +259,41 @@ code span.er { color: #a61717; background-color: #e3d2d2; }
 <li>Start and end with the same character.
 <ul>
 <li>&quot;\b([A-Za-z])[A-Za-z]*\1\b&quot;</li>
-<li>**Start with a </li>
+<li>Start with a <code>\\b</code> word boundary and then capture any a-z or A-Z character. Then you can have 0 to any characters from a-z or A-Z until it ends with the first character that was captured</li>
 </ul></li>
+</ul>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>sentence &lt;-<span class="st"> &quot;This sentence has all the types of words that we are looking for like elevate or church or eleven&quot;</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a>pattern &lt;-<span class="st"> &quot;</span><span class="ch">\\</span><span class="st">b([A-Za-z])[A-Za-z]*</span><span class="ch">\\</span><span class="st">1</span><span class="ch">\\</span><span class="st">b&quot;</span></span>
+<span id="cb13-3"><a href="#cb13-3"></a></span>
+<span id="cb13-4"><a href="#cb13-4"></a><span class="kw">str_extract_all</span>(<span class="dt">string =</span> sentence, <span class="dt">pattern =</span> pattern)</span></code></pre></div>
+<pre><code>## [[1]]
+## [1] &quot;that&quot;    &quot;elevate&quot;</code></pre>
+<ul>
 <li>Contain a repeated pair of letters (e.g. “church” contains “ch” repeated twice.)
 <ul>
 <li>&quot;\b(..)[A-Za-z]*\1\b&quot;</li>
-<li><strong>\b is a word boundary to ensure you match on a word, then a two character capture group followed by any number of characters a-z case insentive and then repeated by the two character capture group</strong></li>
+<li>\b is a word boundary to ensure you match on a word, then a two character capture group followed by any number of characters a-z case insensitive and then repeated by the two character capture group</li>
 </ul></li>
+</ul>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>sentence &lt;-<span class="st"> &quot;This sentence has all the types of words that we are looking for like elevate or church or eleven&quot;</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a>pattern &lt;-<span class="st"> &quot;</span><span class="ch">\\</span><span class="st">b(..)[A-Za-z]*</span><span class="ch">\\</span><span class="st">1</span><span class="ch">\\</span><span class="st">b&quot;</span></span>
+<span id="cb15-3"><a href="#cb15-3"></a></span>
+<span id="cb15-4"><a href="#cb15-4"></a><span class="kw">str_extract_all</span>(<span class="dt">string =</span> sentence, <span class="dt">pattern =</span> pattern)</span></code></pre></div>
+<pre><code>## [[1]]
+## [1] &quot;church&quot;</code></pre>
+<ul>
 <li>Contain one letter repeated in at least three places (e.g. “eleven” contains three “e”s.)
 <ul>
 <li>“\w<em>(\w)\w</em>\1\w<em>\1\w</em>”</li>
-<li><strong>Start with <code>\\w*</code> to look for any word character as many times and then capture a word character. Afterwords, allow any word character and look for the captured word 2 other times then match if the criteria is met.</strong></li>
+<li>Start with <code>\\w*</code> to look for any word character as many times and then capture a word character. Afterwords, allow any word character and look for the captured word 2 other times then match if the criteria is met.</li>
 </ul></li>
 </ul>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>sentence &lt;-<span class="st"> &quot;This sentence has all the types of words that we are looking for like elevate or church or eleven&quot;</span></span>
+<span id="cb17-2"><a href="#cb17-2"></a>pattern &lt;-<span class="st"> &quot;</span><span class="ch">\\</span><span class="st">w*(</span><span class="ch">\\</span><span class="st">w)</span><span class="ch">\\</span><span class="st">w*</span><span class="ch">\\</span><span class="st">1</span><span class="ch">\\</span><span class="st">w*</span><span class="ch">\\</span><span class="st">1</span><span class="ch">\\</span><span class="st">w*&quot;</span></span>
+<span id="cb17-3"><a href="#cb17-3"></a></span>
+<span id="cb17-4"><a href="#cb17-4"></a><span class="kw">str_extract_all</span>(<span class="dt">string =</span> sentence, <span class="dt">pattern =</span> pattern)</span></code></pre></div>
+<pre><code>## [[1]]
+## [1] &quot;sentence&quot; &quot;elevate&quot;  &quot;eleven&quot;</code></pre>
 </section>
 
 

@@ -1,0 +1,34 @@
+---
+title: "Assignment 5"
+author: "Santiago Torres"
+date: "9/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+```
+
+# Cleaning and Analyzing Untidy Data
+
+
+## Israeli Vaccination Records
+
+Read in excel
+
+```{r}
+
+github_url <- "https://github.com/acatlin/data/blob/master/israeli_vaccination_data_analysis_start.xlsx"
+# download file to working directory
+dest_file <- str_c(getwd(),"/israeli_vaccination.xlsx")
+
+download.file(github_url,dest_file)
+
+israeli_vaccines <- read_excel("israeli_vaccination.xlsx")
+```
+
+
+
+``

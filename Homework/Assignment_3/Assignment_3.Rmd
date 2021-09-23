@@ -118,12 +118,39 @@ The two exercises below are taken from R for Data Science, 14.3.5.1 in the on-li
 
 * Start and end with the same character.
   + "\\b([A-Za-z])[A-Za-z]*\\1\\b"
-  + **Start with a \b word boundary and then capture any a-z or A-Z character. Then you can have 0 to any characters from a-z or A-Z until it ends with the first character that was captured**
+  + Start with a `\\b` word boundary and then capture any a-z or A-Z character. Then you can have 0 to any characters from a-z or A-Z until it ends with the first character that was captured
+
+  
+```{r}
+
+sentence <- "This sentence has all the types of words that we are looking for like elevate or church or eleven"
+pattern <- "\\b([A-Za-z])[A-Za-z]*\\1\\b"
+
+str_extract_all(string = sentence, pattern = pattern)
+```
 
 * Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.)
   + "\\b(..)[A-Za-z]*\\1\\b"
-  + **\\b is a word boundary to ensure you match on a word, then a two character capture group followed by any number of characters a-z case insentive and then repeated by the two character capture group**
+  + \\b is a word boundary to ensure you match on a word, then a two character capture group followed by any number of characters a-z case insensitive and then repeated by the two character capture group
+
+```{r}
+
+sentence <- "This sentence has all the types of words that we are looking for like elevate or church or eleven"
+pattern <- "\\b(..)[A-Za-z]*\\1\\b"
+
+str_extract_all(string = sentence, pattern = pattern)
+```
+
 
 * Contain one letter repeated in at least three places (e.g. "eleven" contains three "e"s.)
   + "\\w*(\\w)\\w*\\1\\w*\\1\\w*"
-  + **Start with `\\w*` to look for any word character as many times and then capture a word character. Afterwords, allow any word character and look for the captured word 2 other times then match if the criteria is met.**
+  + Start with `\\w*` to look for any word character as many times and then capture a word character. Afterwords, allow any word character and look for the captured word 2 other times then match if the criteria is met.  
+  
+```{r}
+
+sentence <- "This sentence has all the types of words that we are looking for like elevate or church or eleven"
+pattern <- "\\w*(\\w)\\w*\\1\\w*\\1\\w*"
+
+str_extract_all(string = sentence, pattern = pattern)
+```
+  

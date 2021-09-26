@@ -1,34 +1,125 @@
 ---
 title: "Assignment 5"
 author: "Santiago Torres"
-date: "9/28/2021"
-output: html_document
+date: "9/26/2021"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: vignette
+    keep_md: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-library(readxl)
+library(scales)
+library(openxlsx)
 ```
 
 # Cleaning and Analyzing Untidy Data
 
+## Goals:
+
+1. Understand if there is enough data to calculate the total population
+2. Calculate the efficacy of the vaccines against the disease and what it means.
+3. Compare the rate of severe cases in unvaccinated individuals versus vaccinated individuals.
+
 
 ## Israeli Vaccination Records
 
-Read in excel
+First step is to read in the excel file.
+
+```{r}
+israeli_vaccines <- read.xlsx("https://github.com/sserrot/DATA607/blob/main/Homework/Assignment_5/israeli_vaccination_data_analysis_start.xlsx?raw=true")
+israeli_vaccines
+```
+Relevant data only exists in the first 5 rows so we can drop those rows and the last column which we will calculate later.
+We should rename the columns to more manageable names as well
 
 ```{r}
 
-github_url <- "https://github.com/acatlin/data/blob/master/israeli_vaccination_data_analysis_start.xlsx"
-# download file to working directory
-dest_file <- str_c(getwd(),"/israeli_vaccination.xlsx")
+israeli_vaccines <- israeli_vaccines[2:5,1:5]
 
-download.file(github_url,dest_file)
+israeli_vaccines <-  israeli_vaccines %>% rename(age = Age, unvaccinated = `Population.%`, vaccinated = `X3`, severe_unvaccinated = Severe.Cases, severe_vaccinated = X5 )
+israeli_vaccines
 
-israeli_vaccines <- read_excel("israeli_vaccination.xlsx")
+# manually add in the percentage identifiers
+under_fifty_per <- israeli_vaccines[2,2:3]
+under_fifty_per <- under_fifty_per %>% rename(unvaccinated_percent_under_fifty = unvaccinated, vaccinated_percent_under_fifty= vaccinated)
+
+over_fifty_per <- israeli_vaccines[4,2:3]
+over_fifty_per <- over_fifty_per %>% rename(unvaccinated_percent_over_fifty = unvaccinated, vaccinated_percent_over_fifty = vaccinated)
+
+
+
+under_fifty_pop <- israeli_vaccines %>% filter(age == "<50") %>% select(vaccinated) %>% as.numeric()
+
 ```
 
 
+### Question 1 - Total Population
 
-``
+We can do the manual calculation for total population in each age group. 
+Since we know that `r percent(as.numeric(under_fifty_per$vaccinated_percent_under_fifty))` of the under 50 group is `r format(under_fifty_pop, big.mark = ",")`  
+We solve for x =
+
+73/100 = `r format(under_fifty_pop, big.mark = ",")` / X  
+73x = `r format(under_fifty_pop * 100, big.mark=",")`  
+x  = `r format(under_fifty_pop * 100 / (as.numeric(under_fifty_per$vaccinated_percent_under_fifty)*100), big.mark=",")`  
+
+We repeat the same for the over-fifty numbers to get the total population as defined in this data. The total population would include people who are not fully vaccinated or un-vaccinated - ex: only one dose.
+This also assumes that one of these cohorts includes 50 year olds as the data itself is not clear of which segment includes 50 year olds.
+
+```{r}
+under_fifty_total <- israeli_vaccines %>% filter(age == "<50") %>% select(vaccinated) %>% as.numeric() * 100 / 73
+over_fifty_total <- israeli_vaccines %>% filter(age == ">50") %>% select(vaccinated) %>% as.numeric() * 100 / 90.4
+total_population <- under_fifty_total + over_fifty_total
+
+format(total_population, big.mark=",")
+```
+
+### Question 2 - Efficacy vs Disease
+
+Efficacy is defined in the dataset as 1 - (% of fully vaxed severe cases) / (% not vaxed severe cases per 100k)
+
+```{r}
+# get total vaccinated
+under_fifty_vaxed <- israeli_vaccines %>% filter(age == "<50") %>% select(vaccinated) %>% as.numeric()
+under_fifty_vaxed_severe <- israeli_vaccines %>% filter(age == "<50") %>% select(severe_vaccinated) %>% as.numeric()
+
+over_fifty_vaxed <- israeli_vaccines %>% filter(age == ">50") %>% select(vaccinated) %>% as.numeric()
+over_fifty_vaxed_severe <- israeli_vaccines %>% filter(age == ">50") %>% select(severe_vaccinated) %>% as.numeric()
+
+total_vax <- under_fifty_vaxed + over_fifty_vaxed
+total_vax_severe <- under_fifty_vaxed_severe + over_fifty_vaxed_severe
+per_vax_severe <- total_vax_severe / total_vax
+```
+
+Same process for unvaccinated
+
+```{r}
+# un vaccinated
+
+under_fifty_unvaxed <- israeli_vaccines %>% filter(age == "<50") %>% select(unvaccinated) %>% as.numeric()
+under_fifty_unvaxed_severe <- israeli_vaccines %>% filter(age == "<50") %>% select(severe_unvaccinated) %>% as.numeric()
+
+over_fifty_unvaxed <- israeli_vaccines %>% filter(age == ">50") %>% select(unvaccinated) %>% as.numeric()
+over_fifty_unvaxed_severe <- israeli_vaccines %>% filter(age == ">50") %>% select(severe_unvaccinated) %>% as.numeric()
+
+total_unvax <- under_fifty_unvaxed + over_fifty_unvaxed
+total_unvax_severe <- under_fifty_unvaxed_severe + over_fifty_unvaxed_severe
+per_unvax_severe <- total_unvax_severe / total_unvax
+```
+
+Calculate efficacy
+
+```{r}
+
+efficacy <- 1 - (per_vax_severe / per_unvax_severe)
+
+efficacy
+```
+
+### Question 3 - Compare the rate of severe cases
+
+It is clear that the rate of severe cases is less in vaccinated individuals compared to un-vaccinated individuals since the efficacy is around 67%. This effectively means someone who is vaccinated is about 2/3rd less likely to get a severe case than someone who is unvaccinated.

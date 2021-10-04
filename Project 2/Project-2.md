@@ -262,7 +262,7 @@ Alec wants to answer the following questions with this dataset:
 
 ## Data Storage
 
-I downloaded the data is pulled from [The World Bank](https://data.worldbank.org/indicator/SH.DYN.MORT) and uploaded the csv file to my GitHub account with a wide format (years as columns). The data is about Mortality rate, under-5 (per 1,000 live births)
+I downloaded the data from [The World Bank](https://data.worldbank.org/indicator/SH.DYN.MORT) and uploaded the csv file to my GitHub account with a wide format (years as columns). The data is about Mortality rate, under-5 (per 1,000 live births)
 
 
 ## Importing and Preparing Data
@@ -475,6 +475,15 @@ child_mort_bottom_ten %>% ggplot(aes(x=year,y=child_mortality, color = country_n
 ```
 
 ![](Project-2_files/figure-html/unnamed-chunk-21-1.png)<!-- -->
+
+It looks like all these countries have dropped their child mortality rates by between 1/2 to 1/4 since the data has been tracked. We can get the exact numbers from the following snippet of code:
+
+
+```r
+earliest_year <- child_mort_bottom_ten %>% drop_na() %>% group_by(country_name) %>% summarize(min_year = min(year))
+```
+
+
 ### Question 3: Comparatively, what does the trend for G7 countries look like over time?
 
 First, we have to find the list of G7 countries from [Wikipedia](https://en.wikipedia.org/wiki/Group_of_Seven)
@@ -496,11 +505,251 @@ child_mort %>% filter(country_name %in% g_seven) %>% ggplot(aes(x=year,y=child_m
 ## Warning: Removed 8 rows containing missing values (geom_point).
 ```
 
-![](Project-2_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
+![](Project-2_files/figure-html/unnamed-chunk-24-1.png)<!-- -->
 
+The G7 countries have also dropped their mortality rates by about 1/3 to 1/5, although their starting points are much lower relatively speaking.
+
+
+# Tuition Assistance Program (TAP) Fall Headcount by College - 2020
+
+## Overview of Approach
+
+Bianka wants to answer the following questions with this dataset:
+
+  + See recipient trends by academic year, by section type
+  + Get percentage of students receiving TAP by sector type or academic year.
 
 ## Data Storage
 
+I downloaded the data from [data.gov](https://catalog.data.gov/dataset/tuition-assistance-program-tap-fall-headcount-by-college-sector-group-and-level-of-study-b) and uploaded the csv file to my GitHub account. The data is about all the trees in NYC in 2015.
+
 ## Importing and Preparing Data
 
+
+```r
+input_csv <- "https://raw.githubusercontent.com/sserrot/DATA607/main/Project%202/tuition_assistance/Tuition_Assistance_Program__TAP__Fall_Headcount_By_College__Sector_Group__and_Level_of_Study___Beginning_2000.csv"
+TAP  <- read.csv(input_csv, check.names = FALSE)
+colnames(TAP)
+```
+
+```
+## [1] "Academic Year"       "TAP College Code"    "Federal School Code"
+## [4] "Level"               "TAP Level of Study"  "TAP College Name"   
+## [7] "Sector Type"         "TAP Sector Group"    "TAP Fall Headcount"
+```
+### Rename headers
+
+
+```r
+TAP <- TAP %>% rename(academic_year = "Academic Year", tap_college_code = "TAP College Code", fed_school_code = "Federal School Code", level = Level, study_level = "TAP Level of Study", sector_type = "Sector Type", sector_group = "TAP Sector Group", headcount = "TAP Fall Headcount", tap_college_name = "TAP College Name")
+
+head(TAP)
+```
+
+```
+##   academic_year tap_college_code fed_school_code level    study_level
+## 1          2019             8206           37133     U 4 yr Undergrad
+## 2          2019              940            2849     U 4 yr Undergrad
+## 3          2019              685            2816     U 4 yr Undergrad
+## 4          2019             6020            2857     U 4 yr Undergrad
+## 5          2019             2051            2713     U 4 yr Undergrad
+## 6          2019             6093            2763     U 4 yr Undergrad
+##                   tap_college_name sector_type   sector_group headcount
+## 1       BEIS MEDRASH HEICHAL DOVID     PRIVATE 9-CHAPTER XXII        18
+## 2     SUNY PLATTSBURGH (UNDERGRAD)      PUBLIC      3-SUNY SO      1936
+## 3                    SIENA COLLEGE     PRIVATE  5-INDEPENDENT       872
+## 4    SUNY COLLEGE OF TECH AT DELHI      PUBLIC      3-SUNY SO       557
+## 5 DOMINICAN COLLEGE-WEEKEND 4YR UG     PRIVATE  5-INDEPENDENT         4
+## 6               MARIA COLLEGE 4 YR     PRIVATE  5-INDEPENDENT        33
+```
+
+This data has already been converted to a long format, so there is not much more tidying to do.
+
+
+
 ## Data Analysis
+
+### Question 1 See recipient trends by academic year, by sector type
+
+
+Let's start by looking through the data
+
+
+```r
+unique(TAP$academic_year)
+```
+
+```
+##  [1] 2019 2018 2017 2016 2015 2014 2013 2012 2011 2010 2009 2008 2007 2006 2005
+## [16] 2004 2003 2002 2001 2000
+```
+
+We have data for the past 19 years, let's see the max headcount recipient per year
+
+
+```r
+TAP %>% group_by(academic_year, tap_college_name, sector_type) %>% summarize(largest_headcount_by_year = max(headcount)) %>% arrange(desc(largest_headcount_by_year))
+```
+
+```
+## `summarise()` has grouped output by 'academic_year', 'tap_college_name'. You can override using the `.groups` argument.
+```
+
+```
+## # A tibble: 7,295 x 4
+## # Groups:   academic_year, tap_college_name [7,295]
+##    academic_year tap_college_name              sector_type largest_headcount_by~
+##            <int> <chr>                         <chr>                       <int>
+##  1          2015 CUNY MANHATTAN CC             PUBLIC                       9529
+##  2          2017 CUNY MANHATTAN CC             PUBLIC                       9365
+##  3          2016 CUNY MANHATTAN CC             PUBLIC                       9250
+##  4          2014 CUNY MANHATTAN CC             PUBLIC                       8604
+##  5          2018 CUNY MANHATTAN CC             PUBLIC                       8509
+##  6          2005 SUNY BUFFALO 4 YR (UNDERGRAD) PUBLIC                       8405
+##  7          2004 SUNY BUFFALO 4 YR (UNDERGRAD) PUBLIC                       8323
+##  8          2006 SUNY BUFFALO 4 YR (UNDERGRAD) PUBLIC                       8273
+##  9          2012 CUNY MANHATTAN CC             PUBLIC                       8139
+## 10          2013 CUNY MANHATTAN CC             PUBLIC                       8116
+## # ... with 7,285 more rows
+```
+
+Largest headcount recipient ever was `CUNY MANHATTAN CC` in 2015.
+
+
+how many colleges are there?
+
+
+```r
+length(unique(TAP$tap_college_name))
+```
+
+```
+## [1] 571
+```
+
+That's a lot of colleges to represent in a single graph, so we should try to figure out a way to split out the dataset into a more manageable set of graphs.
+
+
+```r
+TAP %>% ggplot(aes(x=academic_year, y=headcount)) + geom_point() + facet_wrap(~sector_group)
+```
+
+![](Project-2_files/figure-html/unnamed-chunk-30-1.png)<!-- -->
+
+```r
+TAP %>% ggplot(aes(x=academic_year, y=headcount)) + geom_point() + facet_wrap(~sector_type)
+```
+
+![](Project-2_files/figure-html/unnamed-chunk-30-2.png)<!-- -->
+
+Still hard to tell what is going on. Maybe if we sum each group's total headcount per year
+
+
+```r
+TAP_sector_group <- TAP %>% group_by(academic_year, sector_group) %>% summarize(headcount = sum(headcount))
+```
+
+```
+## `summarise()` has grouped output by 'academic_year'. You can override using the `.groups` argument.
+```
+
+```r
+TAP_sector_group %>% ggplot(aes(x=academic_year, y=headcount, color = sector_group)) + geom_point() + facet_wrap(~sector_group)
+```
+
+![](Project-2_files/figure-html/unnamed-chunk-31-1.png)<!-- -->
+
+```r
+TAP_sector_type <- TAP %>% group_by(academic_year, sector_type) %>% summarize(headcount = sum(headcount))
+```
+
+```
+## `summarise()` has grouped output by 'academic_year'. You can override using the `.groups` argument.
+```
+
+```r
+TAP_sector_type %>% ggplot(aes(x=academic_year, y=headcount, color = sector_type)) + geom_point()
+```
+
+![](Project-2_files/figure-html/unnamed-chunk-31-2.png)<!-- -->
+
+
+Now we are getting somewhere, you can clearly see a drop in Private headcount as time progresses as well as Independent sector_group
+
+
+### Question 2 Get percentage of students receiving TAP by sector type or academic year.
+
+First we need to get the total number of students per academic year:
+
+
+```r
+TAP_academic_year <- TAP %>% group_by(academic_year) %>% summarize(total = sum(headcount))
+```
+
+Then we enrich the prior data with the new total per year:
+
+
+```r
+TAP_sector_group <- TAP_sector_group %>% left_join(TAP_academic_year)
+```
+
+```
+## Joining, by = "academic_year"
+```
+
+```r
+TAP_sector_group <- TAP_sector_group %>% mutate(percent_students = format(headcount / total * 100, digits = 3))
+
+TAP_sector_group %>% filter(percent_students == max(TAP_sector_group$percent_students))
+```
+
+```
+## # A tibble: 1 x 5
+## # Groups:   academic_year [1]
+##   academic_year sector_group  headcount  total percent_students
+##           <int> <chr>             <int>  <int> <chr>           
+## 1          2000 5-INDEPENDENT     95911 290545 33.01
+```
+
+```r
+TAP_sector_type <- TAP_sector_type %>% left_join(TAP_academic_year)
+```
+
+```
+## Joining, by = "academic_year"
+```
+
+```r
+TAP_sector_type <-TAP_sector_type %>% mutate(percent_students = format(headcount / total * 100, digits = 3))
+
+TAP_sector_type %>% filter(percent_students == max(TAP_sector_type$percent_students))
+```
+
+```
+## # A tibble: 1 x 5
+## # Groups:   academic_year [1]
+##   academic_year sector_type headcount  total percent_students
+##           <int> <chr>           <int>  <int> <chr>           
+## 1          2019 PUBLIC         189626 258364 73.4
+```
+
+
+Turns out GGPlot can just calculate it for you when you graph a bar_plot with position set to `fill`, but it was still nice to see the max values for each group.
+
+
+
+```r
+TAP_sector_group %>% ggplot(aes(fill=sector_group,y=headcount,x=academic_year)) + geom_bar(position="fill", stat="identity")
+```
+
+![](Project-2_files/figure-html/unnamed-chunk-34-1.png)<!-- -->
+
+```r
+TAP_sector_type %>% ggplot(aes(fill=sector_type,y=headcount,x=academic_year)) + geom_bar(position="fill", stat="identity")
+```
+
+![](Project-2_files/figure-html/unnamed-chunk-34-2.png)<!-- -->
+
+
+
+

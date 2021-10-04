@@ -79,6 +79,9 @@ head(champ)
 row.names(champ) <- champ$name
 ```
 
+
+### Tidy and Prep Data
+
 This is already pretty clean, but we should normalize some of the `tags` data so that we can do more analysis later on. 
 
 I'm going to keep things simple for now and simply take the first tag as the canonical `primary_role` and the second as the `secondary_role`
@@ -113,7 +116,7 @@ champ <- champ %>% mutate(strength = attack + defense)
 
 ## Data Analysis
 
-We can do some some high level sorting to get a sense of the 5 weakest champions and the 5 strongest champions by each category
+We can do some some high level sorting to get a sense of the strength of each role
 
 ### Strength by primary_role
 
@@ -123,6 +126,8 @@ champ %>% group_by(primary_role) %>% summarize(max = max(strength), min = min(st
 
 ```
 
+It seems like the strongest groups are Fighters and Tanks, with Fighter's slightly edging out to due a higher mean and a lower spread.
+
 
 ### Attack by primary_role
 
@@ -131,7 +136,11 @@ champ %>% group_by(primary_role) %>% summarize(max = max(strength), min = min(st
 champ %>% group_by(primary_role) %>% summarize(max = max(attack), min = min(attack), mean = mean(attack), stdev = sd(attack), count = n())
 
 ```
-I'm surprise that Supports come out higher than Mages on attack as Mages should in theory have more attacking power than a Support class champion.  
+
+
+I'm surprised that Supports come out higher than Mages on attack as Mages should in theory have more attacking power than a Support class champion.  
+
+
 ### Defense by primary_role
 
 ```{r}
@@ -142,37 +151,144 @@ champ %>% group_by(primary_role) %>% summarize(max = max(defense), min = min(def
 Understandly, Tanks come out with the highest defense.
 
 We can add a third dimension, `difficulty` by adding in a scatter plot to get a graphical sense of the data.
+### Difficulty by Strength
 
 ```{r}
-champ %>% ggplot(aes(x=difficulty, y=strength, color = primary_role)) + geom_point() 
+champ %>% ggplot(aes(x=difficulty, y=strength)) + geom_point() + geom_smooth(method=lm)
 ```
-It's hard to tell if strength increases as difficulty increases, so we can also split out the graphs by the role to get a better sense of it
 
+It looks like there is a slightly negative slope with strength as difficulty decreases. However, remembering Simpson's Paradox, we can stratify our data into the primary roles to see what happens when we evaluate it by role.
 
 ```{r}
-champ %>% filter(primary_role == "Fighter") %>% ggplot(aes(x=difficulty, y=strength, color = primary_role)) + geom_point() + geom_smooth(method=lm) + facet_wrap(~primary_role)
+champ %>% ggplot(aes(x=difficulty, y=strength, color = primary_role)) + geom_point() + geom_smooth(method=lm) + facet_wrap(~primary_role)
 ```
 
+You can see that Tanks increase in strength drastically as difficulty increases and Assassins actually drop drastically as difficulty increases.
+
+
+## Overview and Conclusion
+
+The assigned problem was to find the highest starting HP for each champion, but after taking a look at the data, I felt that a more insightful analysis would be to look at the relative strength of each champion role by its primary role. My key assumptions were as follows:
+
+  + Strength is an additive representation of attack and defense (Attack + Defense).
+  + A champion's primary role in the data is the first in the list of roles provided.
+  
+Based off of those assumptions, the strongest groups in League of Legends are Fighters and Tanks. 
+
+We could do more statistical analysis to determine the exact correlation between strength and difficulty as well as more targeted analysis with the attack / defense characteristics.
 
 
 # Child Mortality Rates Dataset 2
 
-```{r}
+## Overview of Approach
 
+Alec wants to answer the following questions with this dataset:
 
-output_filename <- str_c(getwd(), "/champions.csv")
+  + What 10 countries have the highest under-5 mortality rates today?
+  + For the 10 worst countries, visualize the under-5 mortality trend over time.
+  + Comparatively, what does the trend for G7 countries look like over time?
 
-write.csv(champ_df,output_filename)
-```
+## Data Storage
+
+I downloaded the data is pulled from [The World Bank](https://data.worldbank.org/indicator/SH.DYN.MORT) and uploaded the csv file to my GitHub account with a wide format (years as columns). The data is about Mortality rate, under-5 (per 1,000 live births)
+
 
 ## Importing and Preparing Data
+```{r}
+input_csv <- "https://raw.githubusercontent.com/sserrot/DATA607/main/Project%202/child_mortality_rates/API_SH.DYN.MORT_DS2_en_csv_v2_3012069.csv"
+child_mort <- read.csv(input_csv, check.names = FALSE)
+colnames(child_mort)
+```
 
+### Renaming Column Headers
 
 ```{r}
+child_mort <- child_mort %>% rename(country_name = "ï»¿Country Name", country_code = "Country Code")
 
+head(child_mort)
 ```
+### Lengthen the data
+
+```{r}
+child_mort <- child_mort %>% pivot_longer(cols = !c("country_name","country_code"),names_to = "year", names_transform = list(year = as.integer), values_to =  "child_mortality")
+
+head(child_mort)
+```
+
+Aruba has no data so we can just look at the US to make sure we brought in the data as expected.
+
+```{r}
+child_mort %>% filter(country_code == "USA")
+```
+
 
 
 ## Data Analysis
 
+### Question 1: What 10 countries have the highest under-5 mortality rates today?
+
+Let's first find the most recent year that we have data for:
+
+```{r}
+ max(child_mort$year)
+```
+
+Let's filter the data for 2019 and slice the first 5 countries with the highest child mortality 
+
+```{r}
+child_mort %>% filter(year == 2019) %>% arrange(desc(child_mortality)) %>% slice(1:10)
+```
+
+Let's store this in a list so we can reference these countries later.
+
+```{r}
+bottom_ten_code <- child_mort %>% filter(year == 2019) %>% arrange(desc(child_mortality)) %>% slice(1:10) %>% select(country_code)
+
+```
+
+### Question 2: For the 10 worst countries, visualize the under-5 mortality trend over time.
+
+Since we have the list of the 10 countries with the worst child mortality, we can filter our original dataset and plot the trend of the data over time.
+
+#### Filter
+
+```{r}
+child_mort_bottom_ten <- child_mort[child_mort$country_code %in% bottom_ten_code$country_code,]
+```
+
+
+#### Plot countries over time
+
+```{r}
+child_mort_bottom_ten %>% ggplot(aes(x=year,y=child_mortality, color = country_name)) + geom_point() 
+```
+
+It looks like all these countries have dropped their child mortality rates by between 1/2 to 1/4 since the data has been tracked. We can get the exact numbers from the following snippet of code:
+
+```{r}
+
+
+```
+
+
+### Question 3: Comparatively, what does the trend for G7 countries look like over time?
+
+First, we have to find the list of G7 countries from [Wikipedia](https://en.wikipedia.org/wiki/Group_of_Seven)
+
+Canada, France, Germany, Italy, Japan, the United Kingdom, and the United States:
+
+```{r}
+g_seven <- c("Canada", "France", "Germany", "Italy", "Japan","United Kingdom","United States")
+```
+#### Plot G7 over time
+
+```{r}
+child_mort %>% filter(country_name %in% g_seven) %>% ggplot(aes(x=year,y=child_mortality, color = country_name)) + geom_point() 
+```
+
+
+## Data Storage
+
 ## Importing and Preparing Data
+
+## Data Analysis

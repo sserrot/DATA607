@@ -1,7 +1,7 @@
 ---
 title: "Assignment 5"
 author: "Santiago Torres"
-date: "9/26/2021"
+date: September 26, 2021
 output:
   prettydoc::html_pretty:
     theme: cayman

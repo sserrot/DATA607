@@ -12,9 +12,9 @@
 
 <meta name="author" content="Santiago Torres" />
 
-<meta name="date" content="2021-09-26" />
+<meta name="date" content="2021-09-12" />
 
-<title>Assignment 5</title>
+<title>Assignment 3 - R Character Manipulation</title>
 
 <script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
 // v0.0.1
@@ -157,156 +157,143 @@ code span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 <section class="page-header">
-<h1 class="title toc-ignore project-name">Assignment 5</h1>
+<h1 class="title toc-ignore project-name">Assignment 3 - R Character Manipulation</h1>
 <h4 class="author project-author">Santiago Torres</h4>
-<h4 class="date project-date">September 26, 2021</h4>
+<h4 class="date project-date">September 12, 2021</h4>
 </section>
 
 
 
 <section class="main-content">
-<div id="cleaning-and-analyzing-untidy-data" class="section level1">
-<h1>Cleaning and Analyzing Untidy Data</h1>
-<div id="goals" class="section level2">
-<h2>Goals:</h2>
-<ol style="list-style-type: decimal">
-<li>Understand if there is enough data to calculate the total population</li>
-<li>Calculate the efficacy of the vaccines against the disease and what it means.</li>
-<li>Compare the rate of severe cases in unvaccinated individuals versus vaccinated individuals.</li>
-</ol>
-</div>
-<div id="israeli-vaccination-records" class="section level2">
-<h2>Israeli Vaccination Records</h2>
-<p>First step is to read in the excel file.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>israeli_vaccines &lt;-<span class="st"> </span><span class="kw">read.xlsx</span>(<span class="st">&quot;https://github.com/sserrot/DATA607/blob/main/Homework/Assignment_5/israeli_vaccination_data_analysis_start.xlsx?raw=true&quot;</span>)</span>
-<span id="cb1-2"><a href="#cb1-2"></a>israeli_vaccines</span></code></pre></div>
-<pre><code>##                                                                                                                                                                   Age
-## 1                                                                                                                                                                &lt;NA&gt;
-## 2                                                                                                                                                                 &lt;50
-## 3                                                                                                                                                                    
-## 4                                                                                                                                                                 &gt;50
-## 5                                                                                                                                                                &lt;NA&gt;
-## 6                                                                                                                                                         Definitions
-## 7                                                                                                                                                                &lt;NA&gt;
-## 8                                                                                                                                                                &lt;NA&gt;
-## 9                                                   (1) Do you have enough information to calculate the total population?  What does this total population represent?
-## 10                                                                                                      (2) Calculate the Efficacy vs. Disease; Explain your results.
-## 11 (3) From your calculation of efficacy vs. disease, are you able to compare the rate of severe cases in unvaccinated individuals to that in vaccinated individuals?
-##                                                                                                   Population.%
-## 1                                                                                                   Not Vax\n%
-## 2                                                                                                      1116834
-## 3                                                                                          0.23300000000000001
-## 4                                                                                                       186078
-## 5                                                                                        7.9000000000000001E-2
-## 6                                                                                                         &lt;NA&gt;
-## 7                                                                                  Severe Cases = hospitalized
-## 8  Efficacy vs. severe disease = 1 - (% fully vaxed severe cases per 100K / % not vaxed severe cases per 100K)
-## 9                                                                                                         &lt;NA&gt;
-## 10                                                                                                        &lt;NA&gt;
-## 11                                                                                                        &lt;NA&gt;
-##                     X3         Severe.Cases                  X5
-## 1         Fully Vax\n% Not Vax\nper 100K\np Fully Vax\nper 100K
-## 2              3501118                   43                  11
-## 3                 0.73                 &lt;NA&gt;                &lt;NA&gt;
-## 4              2133516                  171                 290
-## 5  0.90400000000000003                 &lt;NA&gt;                &lt;NA&gt;
-## 6                 &lt;NA&gt;                 &lt;NA&gt;                &lt;NA&gt;
-## 7                 &lt;NA&gt;                 &lt;NA&gt;                &lt;NA&gt;
-## 8                 &lt;NA&gt;                 &lt;NA&gt;                &lt;NA&gt;
-## 9                 &lt;NA&gt;                 &lt;NA&gt;                &lt;NA&gt;
-## 10                &lt;NA&gt;                 &lt;NA&gt;                &lt;NA&gt;
-## 11                &lt;NA&gt;                 &lt;NA&gt;                &lt;NA&gt;
-##              Efficacy
-## 1  vs. severe disease
-## 2                &lt;NA&gt;
-## 3                &lt;NA&gt;
-## 4                &lt;NA&gt;
-## 5                &lt;NA&gt;
-## 6                &lt;NA&gt;
-## 7                &lt;NA&gt;
-## 8                &lt;NA&gt;
-## 9                &lt;NA&gt;
-## 10               &lt;NA&gt;
-## 11               &lt;NA&gt;</code></pre>
-<p>Relevant data only exists in the first 5 rows so we can drop those rows and the last column which we will calculate later. We should rename the columns to more manageable names as well</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>israeli_vaccines &lt;-<span class="st"> </span>israeli_vaccines[<span class="dv">2</span><span class="op">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]</span>
+<p>Please deliver links to an R Markdown file (in GitHub and rpubs.com) with solutions to the problems below. You may work in a small group, but please submit separately with names of all group participants in your submission.</p>
+<p>#1. Using the 173 majors listed in fivethirtyeight.com’s College Majors dataset [<a href="https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/" class="uri">https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/</a>], provide code that identifies the majors that contain either “DATA” or “STATISTICS”</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>majors_df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/majors-list.csv&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2"></a></span>
+<span id="cb1-3"><a href="#cb1-3"></a>filt_majors &lt;-<span class="st"> </span>majors_df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(<span class="kw">grepl</span>(<span class="st">&quot;DATA | STATISTICS&quot;</span>, Major))</span>
+<span id="cb1-4"><a href="#cb1-4"></a></span>
+<span id="cb1-5"><a href="#cb1-5"></a>filt_majors</span></code></pre></div>
+<pre><code>##   FOD1P                                         Major          Major_Category
+## 1  6212 MANAGEMENT INFORMATION SYSTEMS AND STATISTICS                Business
+## 2  2101      COMPUTER PROGRAMMING AND DATA PROCESSING Computers &amp; Mathematics</code></pre>
+<p>#2 Write code that transforms the data below:</p>
+<p>[1] “bell pepper” “bilberry” “blackberry” “blood orange”</p>
+<p>[5] “blueberry” “cantaloupe” “chili pepper” “cloudberry”</p>
+<p>[9] “elderberry” “lime” “lychee” “mulberry”</p>
+<p>[13] “olive” “salal berry”</p>
+<p>Into a format like this:</p>
+<p>c(“bell pepper”, “bilberry”, “blackberry”, “blood orange”, “blueberry”, “cantaloupe”, “chili pepper”, “cloudberry”, “elderberry”, “lime”, “lychee”, “mulberry”, “olive”, “salal berry”)</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>goal_vector &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;bell pepper&quot;</span>, <span class="st">&quot;bilberry&quot;</span>, <span class="st">&quot;blackberry&quot;</span>, <span class="st">&quot;blood orange&quot;</span>, <span class="st">&quot;blueberry&quot;</span>, <span class="st">&quot;cantaloupe&quot;</span>, <span class="st">&quot;chili pepper&quot;</span>, <span class="st">&quot;cloudberry&quot;</span>, <span class="st">&quot;elderberry&quot;</span>, <span class="st">&quot;lime&quot;</span>, <span class="st">&quot;lychee&quot;</span>, <span class="st">&quot;mulberry&quot;</span>, <span class="st">&quot;olive&quot;</span>, <span class="st">&quot;salal berry&quot;</span>)</span>
 <span id="cb3-2"><a href="#cb3-2"></a></span>
-<span id="cb3-3"><a href="#cb3-3"></a>israeli_vaccines &lt;-<span class="st">  </span>israeli_vaccines <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">rename</span>(<span class="dt">age =</span> Age, <span class="dt">unvaccinated =</span> <span class="st">`</span><span class="dt">Population.%</span><span class="st">`</span>, <span class="dt">vaccinated =</span> <span class="st">`</span><span class="dt">X3</span><span class="st">`</span>, <span class="dt">severe_unvaccinated =</span> Severe.Cases, <span class="dt">severe_vaccinated =</span> X5 )</span>
+<span id="cb3-3"><a href="#cb3-3"></a>sample_string &lt;-<span class="st"> &#39;[1] &quot;bell pepper&quot;  &quot;bilberry&quot;     &quot;blackberry&quot;   &quot;blood orange&quot; </span></span>
 <span id="cb3-4"><a href="#cb3-4"></a></span>
-<span id="cb3-5"><a href="#cb3-5"></a></span>
-<span id="cb3-6"><a href="#cb3-6"></a>israeli_vaccines</span></code></pre></div>
-<pre><code>##    age          unvaccinated          vaccinated severe_unvaccinated
-## 2  &lt;50               1116834             3501118                  43
-## 3        0.23300000000000001                0.73                &lt;NA&gt;
-## 4  &gt;50                186078             2133516                 171
-## 5 &lt;NA&gt; 7.9000000000000001E-2 0.90400000000000003                &lt;NA&gt;
-##   severe_vaccinated
-## 2                11
-## 3              &lt;NA&gt;
-## 4               290
-## 5              &lt;NA&gt;</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co"># manually add in the percentage identifiers</span></span>
-<span id="cb5-2"><a href="#cb5-2"></a>under_fifty_per &lt;-<span class="st"> </span>israeli_vaccines[<span class="dv">2</span>,<span class="dv">2</span><span class="op">:</span><span class="dv">3</span>]</span>
-<span id="cb5-3"><a href="#cb5-3"></a>under_fifty_per &lt;-<span class="st"> </span>under_fifty_per <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">rename</span>(<span class="dt">unvaccinated_percent_under_fifty =</span> unvaccinated, <span class="dt">vaccinated_percent_under_fifty=</span> vaccinated)</span>
-<span id="cb5-4"><a href="#cb5-4"></a></span>
-<span id="cb5-5"><a href="#cb5-5"></a>over_fifty_per &lt;-<span class="st"> </span>israeli_vaccines[<span class="dv">4</span>,<span class="dv">2</span><span class="op">:</span><span class="dv">3</span>]</span>
-<span id="cb5-6"><a href="#cb5-6"></a>over_fifty_per &lt;-<span class="st"> </span>over_fifty_per <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">rename</span>(<span class="dt">unvaccinated_percent_over_fifty =</span> unvaccinated, <span class="dt">vaccinated_percent_over_fifty =</span> vaccinated)</span>
-<span id="cb5-7"><a href="#cb5-7"></a></span>
-<span id="cb5-8"><a href="#cb5-8"></a></span>
-<span id="cb5-9"><a href="#cb5-9"></a></span>
-<span id="cb5-10"><a href="#cb5-10"></a>under_fifty_pop &lt;-<span class="st"> </span>israeli_vaccines <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(age <span class="op">==</span><span class="st"> &quot;&lt;50&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(vaccinated) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.numeric</span>()</span></code></pre></div>
-<div id="question-1---total-population" class="section level3">
-<h3>Question 1 - Total Population</h3>
-<p>We can do the manual calculation for total population in each age group. Since we know that 73% of the under 50 group is 3,501,118<br />
-We solve for x =</p>
-<p>73/100 = 3,501,118 / X<br />
-73x = 350,111,800<br />
-x = 4,796,052</p>
-<p>We repeat the same for the over-fifty numbers to get the total population as defined in this data. The total population would include people who are not fully vaccinated or un-vaccinated - ex: only one dose. This also assumes that one of these cohorts includes 50 year olds as the data itself is not clear of which segment includes 50 year olds.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>under_fifty_total &lt;-<span class="st"> </span>israeli_vaccines <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(age <span class="op">==</span><span class="st"> &quot;&lt;50&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(vaccinated) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.numeric</span>() <span class="op">*</span><span class="st"> </span><span class="dv">100</span> <span class="op">/</span><span class="st"> </span><span class="dv">73</span></span>
-<span id="cb6-2"><a href="#cb6-2"></a>over_fifty_total &lt;-<span class="st"> </span>israeli_vaccines <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(age <span class="op">==</span><span class="st"> &quot;&gt;50&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(vaccinated) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.numeric</span>() <span class="op">*</span><span class="st"> </span><span class="dv">100</span> <span class="op">/</span><span class="st"> </span><span class="fl">90.4</span></span>
-<span id="cb6-3"><a href="#cb6-3"></a>total_population &lt;-<span class="st"> </span>under_fifty_total <span class="op">+</span><span class="st"> </span>over_fifty_total</span>
-<span id="cb6-4"><a href="#cb6-4"></a></span>
-<span id="cb6-5"><a href="#cb6-5"></a><span class="kw">format</span>(total_population, <span class="dt">big.mark=</span><span class="st">&quot;,&quot;</span>)</span></code></pre></div>
-<pre><code>## [1] &quot;7,156,136&quot;</code></pre>
-</div>
-<div id="question-2---efficacy-vs-disease" class="section level3">
-<h3>Question 2 - Efficacy vs Disease</h3>
-<p>Efficacy is defined in the dataset as 1 - (% of fully vaxed severe cases) / (% not vaxed severe cases per 100k)</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="co"># get total vaccinated</span></span>
-<span id="cb8-2"><a href="#cb8-2"></a>under_fifty_vaxed &lt;-<span class="st"> </span>israeli_vaccines <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(age <span class="op">==</span><span class="st"> &quot;&lt;50&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(vaccinated) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.numeric</span>()</span>
-<span id="cb8-3"><a href="#cb8-3"></a>under_fifty_vaxed_severe &lt;-<span class="st"> </span>israeli_vaccines <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(age <span class="op">==</span><span class="st"> &quot;&lt;50&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(severe_vaccinated) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.numeric</span>()</span>
-<span id="cb8-4"><a href="#cb8-4"></a></span>
-<span id="cb8-5"><a href="#cb8-5"></a>over_fifty_vaxed &lt;-<span class="st"> </span>israeli_vaccines <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(age <span class="op">==</span><span class="st"> &quot;&gt;50&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(vaccinated) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.numeric</span>()</span>
-<span id="cb8-6"><a href="#cb8-6"></a>over_fifty_vaxed_severe &lt;-<span class="st"> </span>israeli_vaccines <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(age <span class="op">==</span><span class="st"> &quot;&gt;50&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(severe_vaccinated) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.numeric</span>()</span>
-<span id="cb8-7"><a href="#cb8-7"></a></span>
-<span id="cb8-8"><a href="#cb8-8"></a>total_vax &lt;-<span class="st"> </span>under_fifty_vaxed <span class="op">+</span><span class="st"> </span>over_fifty_vaxed</span>
-<span id="cb8-9"><a href="#cb8-9"></a>total_vax_severe &lt;-<span class="st"> </span>under_fifty_vaxed_severe <span class="op">+</span><span class="st"> </span>over_fifty_vaxed_severe</span>
-<span id="cb8-10"><a href="#cb8-10"></a>per_vax_severe &lt;-<span class="st"> </span>total_vax_severe <span class="op">/</span><span class="st"> </span>total_vax</span></code></pre></div>
-<p>Same process for unvaccinated</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># un vaccinated</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="st">[5] &quot;blueberry&quot;    &quot;cantaloupe&quot;   &quot;chili pepper&quot;  &quot;cloudberry&quot;  </span></span>
+<span id="cb3-6"><a href="#cb3-6"></a></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="st">[9] &quot;elderberry&quot;   &quot;lime&quot;         &quot;lychee&quot;       &quot;mulberry&quot;    </span></span>
+<span id="cb3-8"><a href="#cb3-8"></a></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="st">[13] &quot;olive&quot;        &quot;salal berry&quot;&#39;</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a></span>
+<span id="cb3-11"><a href="#cb3-11"></a>sample_string</span></code></pre></div>
+<pre><code>## [1] &quot;[1] \&quot;bell pepper\&quot;  \&quot;bilberry\&quot;     \&quot;blackberry\&quot;   \&quot;blood orange\&quot; \n\n[5] \&quot;blueberry\&quot;    \&quot;cantaloupe\&quot;   \&quot;chili pepper\&quot;  \&quot;cloudberry\&quot;  \n\n[9] \&quot;elderberry\&quot;   \&quot;lime\&quot;         \&quot;lychee\&quot;       \&quot;mulberry\&quot;    \n\n[13] \&quot;olive\&quot;        \&quot;salal berry\&quot;&quot;</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">setdiff</span>(sample_string, goal_vector)</span></code></pre></div>
+<pre><code>## [1] &quot;[1] \&quot;bell pepper\&quot;  \&quot;bilberry\&quot;     \&quot;blackberry\&quot;   \&quot;blood orange\&quot; \n\n[5] \&quot;blueberry\&quot;    \&quot;cantaloupe\&quot;   \&quot;chili pepper\&quot;  \&quot;cloudberry\&quot;  \n\n[9] \&quot;elderberry\&quot;   \&quot;lime\&quot;         \&quot;lychee\&quot;       \&quot;mulberry\&quot;    \n\n[13] \&quot;olive\&quot;        \&quot;salal berry\&quot;&quot;</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co"># read in everything into a list of 1</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a></span>
+<span id="cb7-3"><a href="#cb7-3"></a>sample_string &lt;-<span class="st"> </span>sample_string <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">str_split</span>(<span class="st">&quot;</span><span class="ch">\\\\</span><span class="st">&quot;</span>)</span>
+<span id="cb7-4"><a href="#cb7-4"></a></span>
+<span id="cb7-5"><a href="#cb7-5"></a><span class="co"># replace all non characters with blanks </span></span>
+<span id="cb7-6"><a href="#cb7-6"></a>only_chars &lt;-<span class="st"> &#39;([^a-z&quot; ])&#39;</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a></span>
+<span id="cb7-8"><a href="#cb7-8"></a>sample_string &lt;-<span class="st"> </span>sample_string <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">str_replace_all</span>(only_chars, <span class="st">&quot;&quot;</span>)</span>
+<span id="cb7-9"><a href="#cb7-9"></a></span>
+<span id="cb7-10"><a href="#cb7-10"></a>sample_string </span></code></pre></div>
+<pre><code>## [1] &quot; \&quot;bell pepper\&quot;  \&quot;bilberry\&quot;     \&quot;blackberry\&quot;   \&quot;blood orange\&quot;  \&quot;blueberry\&quot;    \&quot;cantaloupe\&quot;   \&quot;chili pepper\&quot;  \&quot;cloudberry\&quot;   \&quot;elderberry\&quot;   \&quot;lime\&quot;         \&quot;lychee\&quot;       \&quot;mulberry\&quot;     \&quot;olive\&quot;        \&quot;salal berry\&quot;&quot;</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># trim whitespace</span></span>
 <span id="cb9-2"><a href="#cb9-2"></a></span>
-<span id="cb9-3"><a href="#cb9-3"></a>under_fifty_unvaxed &lt;-<span class="st"> </span>israeli_vaccines <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(age <span class="op">==</span><span class="st"> &quot;&lt;50&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(unvaccinated) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.numeric</span>()</span>
-<span id="cb9-4"><a href="#cb9-4"></a>under_fifty_unvaxed_severe &lt;-<span class="st"> </span>israeli_vaccines <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(age <span class="op">==</span><span class="st"> &quot;&lt;50&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(severe_unvaccinated) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.numeric</span>()</span>
-<span id="cb9-5"><a href="#cb9-5"></a></span>
-<span id="cb9-6"><a href="#cb9-6"></a>over_fifty_unvaxed &lt;-<span class="st"> </span>israeli_vaccines <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(age <span class="op">==</span><span class="st"> &quot;&gt;50&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(unvaccinated) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.numeric</span>()</span>
-<span id="cb9-7"><a href="#cb9-7"></a>over_fifty_unvaxed_severe &lt;-<span class="st"> </span>israeli_vaccines <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(age <span class="op">==</span><span class="st"> &quot;&gt;50&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(severe_unvaccinated) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.numeric</span>()</span>
-<span id="cb9-8"><a href="#cb9-8"></a></span>
-<span id="cb9-9"><a href="#cb9-9"></a>total_unvax &lt;-<span class="st"> </span>under_fifty_unvaxed <span class="op">+</span><span class="st"> </span>over_fifty_unvaxed</span>
-<span id="cb9-10"><a href="#cb9-10"></a>total_unvax_severe &lt;-<span class="st"> </span>under_fifty_unvaxed_severe <span class="op">+</span><span class="st"> </span>over_fifty_unvaxed_severe</span>
-<span id="cb9-11"><a href="#cb9-11"></a>per_unvax_severe &lt;-<span class="st"> </span>total_unvax_severe <span class="op">/</span><span class="st"> </span>total_unvax</span></code></pre></div>
-<p>Calculate efficacy</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>efficacy &lt;-<span class="st"> </span><span class="dv">1</span> <span class="op">-</span><span class="st"> </span>(per_vax_severe <span class="op">/</span><span class="st"> </span>per_unvax_severe)</span>
-<span id="cb10-2"><a href="#cb10-2"></a></span>
-<span id="cb10-3"><a href="#cb10-3"></a>efficacy</span></code></pre></div>
-<pre><code>## [1] 0.6747614</code></pre>
-</div>
-<div id="question-3---compare-the-rate-of-severe-cases" class="section level3">
-<h3>Question 3 - Compare the rate of severe cases</h3>
-<p>It is clear that the rate of severe cases is less in vaccinated individuals compared to un-vaccinated individuals since the efficacy is around 67%. This effectively means someone who is vaccinated is about 2/3rd less likely to get a severe case than someone who is unvaccinated.</p>
-</div>
-</div>
-</div>
+<span id="cb9-3"><a href="#cb9-3"></a>sample_string &lt;-<span class="st"> </span>sample_string <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">str_trim</span>()</span>
+<span id="cb9-4"><a href="#cb9-4"></a></span>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="co"># remove escaped quotes</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a>sample_string &lt;-<span class="st"> </span>sample_string <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">str_replace_all</span>(<span class="st">&#39;([&quot;])&#39;</span>, <span class="st">&quot;&quot;</span>)</span>
+<span id="cb9-7"><a href="#cb9-7"></a></span>
+<span id="cb9-8"><a href="#cb9-8"></a><span class="co"># expand string with multiple spaces</span></span>
+<span id="cb9-9"><a href="#cb9-9"></a>sample_string &lt;-<span class="st"> </span>sample_string <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">str_split</span>(<span class="st">&quot;  &quot;</span>)</span>
+<span id="cb9-10"><a href="#cb9-10"></a></span>
+<span id="cb9-11"><a href="#cb9-11"></a><span class="co">#change from list into character vector</span></span>
+<span id="cb9-12"><a href="#cb9-12"></a>sample_string &lt;-<span class="st"> </span>sample_string[[<span class="dv">1</span>]]</span>
+<span id="cb9-13"><a href="#cb9-13"></a></span>
+<span id="cb9-14"><a href="#cb9-14"></a><span class="co">#remove empty characters</span></span>
+<span id="cb9-15"><a href="#cb9-15"></a>sample_string &lt;-<span class="st"> </span>sample_string[sample_string <span class="op">!=</span><span class="st"> &quot;&quot;</span>]</span>
+<span id="cb9-16"><a href="#cb9-16"></a><span class="co">#trim again</span></span>
+<span id="cb9-17"><a href="#cb9-17"></a>sample_string &lt;-<span class="st"> </span>sample_string <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">str_trim</span>()</span>
+<span id="cb9-18"><a href="#cb9-18"></a>sample_string</span></code></pre></div>
+<pre><code>##  [1] &quot;bell pepper&quot;  &quot;bilberry&quot;     &quot;blackberry&quot;   &quot;blood orange&quot; &quot;blueberry&quot;   
+##  [6] &quot;cantaloupe&quot;   &quot;chili pepper&quot; &quot;cloudberry&quot;   &quot;elderberry&quot;   &quot;lime&quot;        
+## [11] &quot;lychee&quot;       &quot;mulberry&quot;     &quot;olive&quot;        &quot;salal berry&quot;</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">setdiff</span>(sample_string,goal_vector)</span></code></pre></div>
+<pre><code>## character(0)</code></pre>
+<p>The two exercises below are taken from R for Data Science, 14.3.5.1 in the on-line version:</p>
+<p>#3 Describe, in words, what these expressions will match:</p>
+<ul>
+<li>(.)\1\1
+<ul>
+<li>While this would not be valid regex in R - in theory this would capture any character except line breaks <em>(.)</em> and then <em>\1</em> is a back-reference that would fit the first capture group and since it is repeated, it would be match the first capture group twice. So something like <em>aaa</em> would match. However, since the backslashes are not escaped (“\\1” and then “\\1”), it would not match anything.</li>
+</ul></li>
+<li>“(.)(.)\\2\\1”
+<ul>
+<li>This regular expression has two capture groups that match any character and then back-references that refer to the second capture group and then the first capture group. Thus it would match anything that follows a pattern of <em>abba</em> where the second character repeats and the first character ends the four character phrase</li>
+</ul></li>
+<li>(..)\1
+<ul>
+<li>This regex has a capture group that matches any two character and then a back-reference to the capture group of the same set. So this would match the pattern <em>abab</em>. However, like the first example, this is not properly formed regex in R and it would fail to actually match the expected pattern.</li>
+</ul></li>
+<li>“(.).\\1.\\1”
+<ul>
+<li>There is a capture group matching any character followed by any character, a back-reference to the capture group, any character, and then another back-reference to the first capture group. This means the regex would match a pattern like <em>azaxa</em> or anything where the first character follows any single character consecutively <em>bybib</em> or <em>;z;w;</em></li>
+</ul></li>
+<li>&quot;(.)(.)(.).*\\3\\2\\1&quot;
+<ul>
+<li>First, you start off capturing a single character in a row. Then you match on any character 0 or more times until it ends with the third capture group then the second capture group and lastly the first captured character. A simple example would be <em>abc anythinginhere cba</em></li>
+</ul></li>
+</ul>
+<p>#4 Construct regular expressions to match words that:</p>
+<ul>
+<li>Start and end with the same character.
+<ul>
+<li>&quot;\b([A-Za-z])[A-Za-z]*\1\b&quot;</li>
+<li>Start with a <code>\\b</code> word boundary and then capture any a-z or A-Z character. Then you can have 0 to any characters from a-z or A-Z until it ends with the first character that was captured</li>
+</ul></li>
+</ul>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>sentence &lt;-<span class="st"> &quot;This sentence has all the types of words that we are looking for like elevate or church or eleven&quot;</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a>pattern &lt;-<span class="st"> &quot;</span><span class="ch">\\</span><span class="st">b([A-Za-z])[A-Za-z]*</span><span class="ch">\\</span><span class="st">1</span><span class="ch">\\</span><span class="st">b&quot;</span></span>
+<span id="cb13-3"><a href="#cb13-3"></a></span>
+<span id="cb13-4"><a href="#cb13-4"></a><span class="kw">str_extract_all</span>(<span class="dt">string =</span> sentence, <span class="dt">pattern =</span> pattern)</span></code></pre></div>
+<pre><code>## [[1]]
+## [1] &quot;that&quot;    &quot;elevate&quot;</code></pre>
+<ul>
+<li>Contain a repeated pair of letters (e.g. “church” contains “ch” repeated twice.)
+<ul>
+<li>&quot;\b(..)[A-Za-z]*\1\b&quot;</li>
+<li>\b is a word boundary to ensure you match on a word, then a two character capture group followed by any number of characters a-z case insensitive and then repeated by the two character capture group</li>
+</ul></li>
+</ul>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>sentence &lt;-<span class="st"> &quot;This sentence has all the types of words that we are looking for like elevate or church or eleven&quot;</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a>pattern &lt;-<span class="st"> &quot;</span><span class="ch">\\</span><span class="st">b(..)[A-Za-z]*</span><span class="ch">\\</span><span class="st">1</span><span class="ch">\\</span><span class="st">b&quot;</span></span>
+<span id="cb15-3"><a href="#cb15-3"></a></span>
+<span id="cb15-4"><a href="#cb15-4"></a><span class="kw">str_extract_all</span>(<span class="dt">string =</span> sentence, <span class="dt">pattern =</span> pattern)</span></code></pre></div>
+<pre><code>## [[1]]
+## [1] &quot;church&quot;</code></pre>
+<ul>
+<li>Contain one letter repeated in at least three places (e.g. “eleven” contains three “e”s.)
+<ul>
+<li>“\w<em>(\w)\w</em>\1\w<em>\1\w</em>”</li>
+<li>Start with <code>\\w*</code> to look for any word character as many times and then capture a word character. Afterwords, allow any word character and look for the captured word 2 other times then match if the criteria is met.</li>
+</ul></li>
+</ul>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>sentence &lt;-<span class="st"> &quot;This sentence has all the types of words that we are looking for like elevate or church or eleven&quot;</span></span>
+<span id="cb17-2"><a href="#cb17-2"></a>pattern &lt;-<span class="st"> &quot;</span><span class="ch">\\</span><span class="st">w*(</span><span class="ch">\\</span><span class="st">w)</span><span class="ch">\\</span><span class="st">w*</span><span class="ch">\\</span><span class="st">1</span><span class="ch">\\</span><span class="st">w*</span><span class="ch">\\</span><span class="st">1</span><span class="ch">\\</span><span class="st">w*&quot;</span></span>
+<span id="cb17-3"><a href="#cb17-3"></a></span>
+<span id="cb17-4"><a href="#cb17-4"></a><span class="kw">str_extract_all</span>(<span class="dt">string =</span> sentence, <span class="dt">pattern =</span> pattern)</span></code></pre></div>
+<pre><code>## [[1]]
+## [1] &quot;sentence&quot; &quot;elevate&quot;  &quot;eleven&quot;</code></pre>
 </section>
 
 

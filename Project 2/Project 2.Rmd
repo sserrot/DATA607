@@ -1,7 +1,7 @@
 ---
 title: "Project 2"
 author: "Santiago Torres"
-date: "10/03/2021"
+date: October 03, 2021
 output:
   prettydoc::html_pretty:
     theme: cayman

@@ -1,7 +1,7 @@
 ---
 title: "Assignment 5"
 author: "Santiago Torres"
-date: "9/26/2021"
+date: September 26, 2021
 output:
   prettydoc::html_pretty:
     theme: cayman
@@ -88,6 +88,8 @@ We should rename the columns to more manageable names as well
 israeli_vaccines <- israeli_vaccines[2:5,1:5]
 
 israeli_vaccines <-  israeli_vaccines %>% rename(age = Age, unvaccinated = `Population.%`, vaccinated = `X3`, severe_unvaccinated = Severe.Cases, severe_vaccinated = X5 )
+
+
 israeli_vaccines
 ```
 

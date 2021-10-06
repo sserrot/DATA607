@@ -14,7 +14,8 @@ This website is for organizing my Data607 projects and assignments
 
 # Projects
 
-[Project 1](https://github.com/sserrot/DATA607/blob/main/Project%201/Project-1.md)
+[Project 1](https://sserrot.github.io/DATA607/projects/Project_1.html)
+[Project 2](https://sserrot.github.io/DATA607/projects/Project_2.html)
 
 
 # Extra Assignments

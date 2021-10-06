@@ -9,15 +9,8 @@ output:
     keep_md: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-```{r include=FALSE}
-library(tidyverse)
-library(devtools)
-library(RCurl)
-library(dplyr)
-```
+
+
 ## Overview
 
 
@@ -29,7 +22,8 @@ Most of the analysis is comparing education and income to marriage rates and how
 
 Let's take a look at the underlying data Casselman used in his article by pulling it from the fivethirtyeight Github.    
 
-```{r}
+
+```r
 urlcsv ="https://raw.githubusercontent.com/fivethirtyeight/data/master/marriage/both_sexes.csv"
 data <- data.frame(read.csv(url(urlcsv)))
 ```
@@ -38,20 +32,44 @@ data <- data.frame(read.csv(url(urlcsv)))
 
 First, we'll take a look at the column headers and what the overall dataset looks like:  
 
-```{r}
+
+```r
 colnames(data)
+```
+
+```
+##  [1] "X"                "year"             "date"             "all_2534"        
+##  [5] "HS_2534"          "SC_2534"          "BAp_2534"         "BAo_2534"        
+##  [9] "GD_2534"          "White_2534"       "Black_2534"       "Hisp_2534"       
+## [13] "NE_2534"          "MA_2534"          "Midwest_2534"     "South_2534"      
+## [17] "Mountain_2534"    "Pacific_2534"     "poor_2534"        "mid_2534"        
+## [21] "rich_2534"        "all_3544"         "HS_3544"          "SC_3544"         
+## [25] "BAp_3544"         "BAo_3544"         "GD_3544"          "White_3544"      
+## [29] "Black_3544"       "Hisp_3544"        "NE_3544"          "MA_3544"         
+## [33] "Midwest_3544"     "South_3544"       "Mountain_3544"    "Pacific_3544"    
+## [37] "poor_3544"        "mid_3544"         "rich_3544"        "all_4554"        
+## [41] "HS_4554"          "SC_4554"          "BAp_4554"         "BAo_4554"        
+## [45] "GD_4554"          "White_4554"       "Black_4554"       "Hisp_4554"       
+## [49] "NE_4554"          "MA_4554"          "Midwest_4554"     "South_4554"      
+## [53] "Mountain_4554"    "Pacific_4554"     "poor_4554"        "mid_4554"        
+## [57] "rich_4554"        "nokids_all_2534"  "kids_all_2534"    "nokids_HS_2534"  
+## [61] "nokids_SC_2534"   "nokids_BAp_2534"  "nokids_BAo_2534"  "nokids_GD_2534"  
+## [65] "kids_HS_2534"     "kids_SC_2534"     "kids_BAp_2534"    "kids_BAo_2534"   
+## [69] "kids_GD_2534"     "nokids_poor_2534" "nokids_mid_2534"  "nokids_rich_2534"
+## [73] "kids_poor_2534"   "kids_mid_2534"    "kids_rich_2534"
 ```
 
 The data is an already aggregated view of each demographic and represents the share of that column that has never married 
 
     Year | All_2534
-    `r data[1,"year"]` | `r data[1,"all_2534"]`
+    1960 | 0.1233145
 
-  In this example `r data[1,"all_2534"]` of the 25-34 age cohort in 1960 have never been married
+  In this example 0.1233145 of the 25-34 age cohort in 1960 have never been married
 
 The article does not look at race or region as a demographic so we'll take that subset of data and rename some of the region column header.
 
-```{r}
+
+```r
 data_subset <- data %>% 
     rename(c(Northeast_2534=NE_2534,MidAtlantic_2534=MA_2534,Northeast_3544=NE_3544,MidAtlantic_3544=MA_3544,Northeast_4554=NE_4554,MidAtlantic_4554=MA_4554)) %>%
     
@@ -67,8 +85,8 @@ This requires us to apply 1 - n to all the values in the data.
 
 Since the data is already aggregated, it will be easier to plot if it's into multiple datasets -  race / region by age
 
-```{r}
 
+```r
 married <- function(x) 1 - x
 
 # change data to reflect marriage rate rather than non-married rate
@@ -88,13 +106,20 @@ Using some code found on [StackOverflow](https://stackoverflow.com/questions/953
 
 ### Racial Marriage Breakdown
 
-```{r}
+
+```r
 data_subset_race %>% tidyr::gather("id", "value", 2:10) %>% 
     ggplot(., aes(year, value))+
      geom_point()+
      geom_smooth(method = "lm", se=FALSE, color="black")+
      facet_wrap(~id)
 ```
+
+```
+## `geom_smooth()` using formula 'y ~ x'
+```
+
+![](Assignment_1_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
 
 There is a clearly out-sized decrease in marriage rates among the black population relative to the other demographics.
 
@@ -103,14 +128,15 @@ The regional breakdown is hard to view with all the prior year data so it's simp
 
 ### Regional Marriage Breakdown post 2000
 
-```{r}
 
+```r
 data_subset_region_2534 %>% filter (year > 1999) %>% tidyr::gather("id", "value", 2:7) %>% 
      ggplot(., aes(year, value))+
      geom_point()+
      facet_wrap(~id)
-
 ```
+
+![](Assignment_1_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
 It appears like the Mid Atlantic and Northeast region dropped in marriage rates more than the other regions.
 

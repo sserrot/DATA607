@@ -1,0 +1,27 @@
+---
+title: "Nobel Prize Winners"
+author: "Santiago Torres"
+date: October 17, 2021
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+library(tidyjson)
+library(rvest)
+```
+
+# Overview
+
+Nobel Prize search
+
+[nobelprize.org](Nobel Website)
+
+Pull in API endpoint for winner, study, and ask and answer 3 questions
+
+```{r}
+
+```
+

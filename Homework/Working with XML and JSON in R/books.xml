@@ -1,0 +1,20 @@
+<LIBRARY>
+	<BOOK>
+		<TITLE>A Memory of Light</TITLE>
+		<AUTHORS>Robert Jordan, Brandon Sanderson</AUTHORS>
+		<GENRE>Fantasy</GENRE>
+		<GOODREADS_RATING>4.50</GOODREADS_RATING>
+	</BOOK>
+	<BOOK>
+		<TITLE>King of Thorns</TITLE>
+		<AUTHORS>Mark Lawrence</AUTHORS>
+		<GENRE>Fantasy</GENRE>
+		<GOODREADS_RATING>4.19</GOODREADS_RATING>
+	</BOOK>
+	<BOOK>
+		<TITLE>Lord Loss</TITLE>
+		<AUTHORS>Darren Shan</AUTHORS>
+		<GENRE>Fantasy</GENRE>
+		<GOODREADS_RATING>4.23</GOODREADS_RATING>
+	</BOOK>
+</LIBRARY>

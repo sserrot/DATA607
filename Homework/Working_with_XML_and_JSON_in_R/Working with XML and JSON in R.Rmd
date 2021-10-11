@@ -2,11 +2,16 @@
 title: "Working with XML and JSON in R"
 author: "Santiago Torres"
 date: "10/10/2021"
-output: html_document
+output: rmdformats::robobook
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(XML)
+library(xml2) #reads xml from GitHub url cleaner than XML package
+library(jsonlite)
+library(rvest)
 ```
 
 # Overview
@@ -21,32 +26,26 @@ I put together a list of three books that I enjoy in the fantasy genre in simple
 
 # Libraries
 
-Tidyverse has a variety of different packages that
-rvest for html
+  + Tidyverse for data manipulation and piping data
+  + rvest for reading the html file
+  + XML and xml2 for reading the XML file and creating a dataframe from XML
+  + jsonlite for reading JSON
 
-
-XML package
 
 # Loading Data
 
+I uploaded all the files I created up to my GitHub:
 
 ```{r}
-library(tidyverse)
-library(XML)
-library(jsonlite)
-library(rvest)
-```
-
-```{r}
-html_library_url <- "https://raw.githubusercontent.com/sserrot/DATA607/main/Homework/Working%20with%20XML%20and%20JSON%20in%20R/books.html"
-xml_library_url <- "https://raw.githubusercontent.com/sserrot/DATA607/main/Homework/Working%20with%20XML%20and%20JSON%20in%20R/books.xml"
-json_library_url <- "https://raw.githubusercontent.com/sserrot/DATA607/main/Homework/Working%20with%20XML%20and%20JSON%20in%20R/books.json"
+html_library_url <- "https://raw.githubusercontent.com/sserrot/DATA607/main/Homework/Working_with_XML_and_JSON_in_R/books.html"
+xml_library_url <- "https://raw.githubusercontent.com/sserrot/DATA607/main/Homework/Working_with_XML_and_JSON_in_R/books.xml"
+json_library_url <- "https://raw.githubusercontent.com/sserrot/DATA607/main/Homework/Working_with_XML_and_JSON_in_R/books.json"
 ```
 
 
 ## HTML
 
-Rvest has a very simple and straightforward way to directly select a table element in html like so:
+Rvest has a very simple and straightforward way to directly select a table element in html using `html_elements`:
 
 ```{r}
 html_library_df <- read_html(html_library_url)
@@ -65,28 +64,31 @@ html_library_df
 ## XML
 
 
-We can quickly see the XML using XML parse. 
+We can preview the XML using XML parse. 
 ```{r}
-xmlParse(xml_library_url)
+xmlData <- read_xml(xml_library_url)
+xmlParse(xmlData)
 ```
 
 
-The XMl package has a `xmlToDataFrame` function that can directly create dataframes from a straightforward xml file. Let's see if it works:
+The XML package has a `xmlToDataFrame` function that can directly create dataframes from a straightforward xml file. Let's see if it works:
 
 ```{r}
-xml_library_df <- xmlToDataFrame(xml_library_url)
+xml_library_df <- xmlData %>% xmlParse() %>% xmlToDataFrame()
 xml_library_df
 ```
 
+
+
 ```{r}
-xml_library_df <- tibble(xml_library_df)
+#xml_library_df <- tibble(xml_library_df)
 ```
 
-All set with XML then!
 
 ## JSON
 
-I like using `jsonlite`
+
+`fromJSON` creates a list but we'll do some manipulation later to make the dataframe equivalent
 
 ```{r}
 json_library_df <- fromJSON(json_library_url)
@@ -94,22 +96,80 @@ json_library_df
 class(json_library_df)
 ```
 
-`fromJSON` creates a list so we have to convert it into a tibble structure using `tibble`
+
+
+# Comparison & Observations
+
+Now we have three dataframe like set of books created from our different sources we can compare.
 
 ```{r}
-json_library_df <- tibble(json_library_df$library)
+class(html_library_df)
+class(xml_library_df)
+class(json_library_df)
 ```
 
+## HTML Library
 
-
-# Comparison
-
-Now we have three tibbles created from our different sources we can compare.
 ```{r}
 html_library_df
+```
+  
+  Our HTML source becomes a list that holds a tibble with our information. The title itself is in quotations because the source has parentheses in it `Author(s)`. Multiple authors are also stored as characters
+```{r}
+html_library_df[[1]]$`Author(s)`
+class(html_library_df[[1]]$`Author(s)`)
+```
+
+We can access the list and then rename the authors column
+
+```{r}
+html_library_df <- html_library_df[[1]]
+
+html_library_df <- html_library_df %>% rename (Authors = `Author(s)`)
+html_library_df
+```
+
+## XML Library
+
+The XML basically requires no real manipulation to have it consistent with the other sources. Looks like the AUTHORS column is also stored as `chr` We could apply `tibble()` just to keep it in the same technical format:
+
+```{r}
 xml_library_df
+
+xml_library_df <- xml_library_df %>% tibble()
+
+xml_library_df
+```
+
+Looks like it didnt recognize that the ratings are numerical
+
+```{r}
+xml_library_df$GOODREADS_RATING <-  xml_library_df$GOODREADS_RATING %>% as.numeric()
+xml_library_df
+```
+
+## JSON Library
+```{r}
 json_library_df
 ```
 
 
+The JSON was read in as a list so we have to convert it into a tibble structure using `tibble`
+
+```{r}
+json_library_df <- tibble(json_library_df$library)
+json_library_df
+json_library_df$authors
+```
 You can see that the JSON stored the multiple authors as a list due to the nature of the JSON file itself. This can be beneficial when working with datasets that have large lists within the data structure.
+
+# Conclusion
+
+  + HTML
+    + Numerical values are appropriately read in.
+    + HTML data is created as a list that we convert to a tibble()
+  + XML
+    + We can create a dataframe, but we have to manually convert numerical values
+  + JSON
+    + `fromJSON` reads in our data as a list that can be converted to a tibble()
+    + JSON can hold arrays as values within its original format, which creates list values when you convert from JSON to tibble(). This is the biggest difference between methods and feels more _technically_ correct for storing multiple authors.

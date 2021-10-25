@@ -147,3 +147,5 @@ While every demographic has seen a drop in marriage rates, there is clearly a la
 
 
 The work could be further extended with a more formal statistical review to see how the decreases compare across all the dimensions. There could also be additional dimensions to consider such as religion, which is an integral component of marriage, and is not explored in this dataset.  
+
+$$\sum_x=1^10 x^2$$

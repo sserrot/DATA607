@@ -1,0 +1,70 @@
+---
+title: "Web_APIs"
+author: "Santiago Torres"
+date: "10/24/2021"
+output: 
+  rmdformats::robobook:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(keyring) # handling api
+library(jsonlite)
+library(tidyverse)
+api_key <- key_list("nyt")[1,2]
+```
+
+# Environment Variables and Libaries
+
+  + keyring for secure API usage
+  + jsonlite for reading in the JSON data from the API for reading the html file
+  + tidyverse for dataframe manipulation and helper functions
+  
+# Overview & Approach
+
+This assignment was to get familiar with using an API to read in data into a dataframe in R.
+
+I first signed up for a developer account on [NYTimes](https://developer.nytimes.com/get-started).
+
+My goal is to see if there are authors or publishers that are represented more often on the best seller list.
+
+
+# Loading Data
+
+After getting an API from NYTimes, I stored it in my R keyring and called for the latest best sellers list in `hardcover-fiction`
+
+```{r}
+api_call <- str_c("https://api.nytimes.com/svc/books/v3/lists/current/hardcover-fiction.json?api-key=",api_key)
+books <- fromJSON(api_call)
+glimpse(books)
+```
+It reads in a lot of extra information when I just want to see the latest set of books and publishers on the NYT list. So I'll create a tibble out of the books column in results:
+
+```{r}
+nyt_list <- books$results$books
+glimpse(nyt_list)
+```
+
+# Publisher Analysis
+
+
+```{r}
+nyt_list %>% ggplot(aes(x=publisher)) + geom_histogram(stat = "count") + coord_flip() + ggtitle("Publisher Count")
+```
+Viking and Simon & Schuster both have 3 books on the list when you include the duo Simon & Schuster, St Martin's entry.
+
+# Author Analysis
+
+```{r}
+nyt_list %>% ggplot(aes(x=author,fill = publisher)) + geom_histogram(stat = "count") + coord_flip() + ggtitle("Author Count")
+```
+
+# Conclusion and Next Steps
+
+  + Publishers
+    + Viking and Simon & Schuster are the most represented
+  + Authors
+    + No author currently has more than one book on the best sellers list.
+
+We could extend this to include a years worth of data for every week and then plot out which publishers are highly represente on the NYT list as well as which authors have been successful on the list. We could also look at the running length of time they are on the NYT list (`weeks_on_list`) and see what impact author / publisher has on that metric.

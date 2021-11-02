@@ -4,4 +4,6 @@ install.packages("tidytext")
 install.packages("textdata")
 install.packages("wordcloud")
 install.packages("reshape2")
-rmdformats
+install.packages("rmdformats")
+install.packages("pdftools")
+install.packages("tm")

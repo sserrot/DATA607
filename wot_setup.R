@@ -1,7 +1,15 @@
 library(tm)
 library(pdftools)
+library(here)
 
-files <- list.files(pattern = "pdf$")
+library(tidyverse)
+library(tidytext)
+library(wordcloud)
+library(reshape2)
+
+path_to_pdf <- here("Data Science", "Data Acquisition and Management", "DATA607","WoT")
+
+files <- list.files(path = path_to_pdf, pattern = "pdf$")
 test <- lapply(files, pdf_text)
 
 

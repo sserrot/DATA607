@@ -14,8 +14,10 @@ files <- list.files(path = path_to_pdf, pattern = "pdf$")
 # abstract out to now manually pull each dataframe.
 complete_path <- function(x) { str_c(path_to_pdf, "/",x)}
 files <- complete_path(files)
+
+# read in all pdfs in the WoT folder
 wot <- lapply(files, pdf_text)
-# end 
+
 
 
 
@@ -45,7 +47,6 @@ testing_function <- function(list) {
 
 all_books <- lapply(wot, testing_function)
   
-  
 all_books <- all_books %>% reduce(rbind) # bind all dataframes together
 
 
@@ -67,3 +68,20 @@ ggplot(dragon_reborn_pages, aes(x=page,y=value)) + geom_point()
 
 
 ggplot(all_books, aes(x=book,y=value)) + geom_boxplot()
+
+## NRC
+# sentiment analysis
+
+nrc <- get_sentiments("nrc") # emotions
+
+
+all_books_nrc <- all_books %>% inner_join(nrc)
+
+# remove positive / negative since we already check that using AFINN quantitatively
+
+all_books_nrc <- all_books_nrc %>% filter(!sentiment %in% c("positive","negative"))
+
+all_books_sentiment <- all_books_nrc %>% group_by(book,sentiment) %>% summarize(count = n())
+
+all_books_nrc %>% ggplot(aes(x=book, color = sentiment)) + geom_bar(position = "fill")+ coord_flip()
+

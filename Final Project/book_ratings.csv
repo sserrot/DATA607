@@ -1,10 +1,10 @@
-book_name,goodreads_rating,num_ratings
-The Eye of The World,4.17,436923
-The Great Hunt,4.23,254637
-The Dragon Reborn,4.25,234968
-The Shadow Rising,4.24,189853
-The Fires of Heaven,4.16,153907
-The Lord of Chaos,4.14,143274
-A Crown of Swords,4.04,139194
-The Path of Daggers,3.91,119925
-Winter's Heart,3.94,114984
+book,goodreads_rating,num_ratings,book_num
+The Eye Of The World,4.17,436923,1
+The Great Hunt,4.23,254637,2
+The Dragon Reborn,4.25,234968,3
+The Shadow Rising,4.24,189853,4
+The Fires of Heaven,4.16,153907,5
+The Lord of Chaos,4.14,143274,6
+A Crown of Swords,4.04,139194,7
+The Path of Daggers,3.91,119925,8
+Winter’s Heart,3.94,114984,9

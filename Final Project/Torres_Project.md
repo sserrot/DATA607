@@ -393,7 +393,7 @@ summary(model)
 
 With a low adjusted R-squared at .3711, the low p-value (.04803) is not significant. The model is also pretty limited based on the small sample size of books. Further analysis would include up to 15 books and provide some more confidence in the model, as well as potential expansion to other high fantasy series to see if the trend holds. 
 
-Other limitations are that I used word sentiment instead of sentence sentiment. It's possible that the overall sentiment of a book could change if I used a sentence token over a word token. For example, the word `gray` is ranked at -1 in the AFINN lexicon, but it could be in a neutral context when describing a characters eyes. There could also be a difference if I used a chapter separation instead of page separation when analyzing a books sentiment over the course of the book. These could all be future extenstions of the analysis.
+Other limitations are that I used word sentiment instead of sentence sentiment. It's possible that the overall sentiment of a book could change if I used a sentence token over a word token. For example, the word `gray` is ranked at -1 in the AFINN lexicon, but it could be in a neutral context when describing a characters eyes. There could also be a difference if I used a chapter separation instead of page separation when analyzing a book's sentiment over the course of the book. These could all be future extensions of the analysis.
 
 # Citations
 

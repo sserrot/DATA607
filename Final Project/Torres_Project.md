@@ -25,11 +25,11 @@ library(ggplot2)
 
 As an avid reader, The Wheel of Time is one of my favorite high fantasy series. After learning about sentiment analysis in the DATA607 class, I was inspired to apply sentiment analysis to the first 9 books in the Wheel of Time series to compare the overall sentiment of each book to its related Goodreads rating and determine any correlation. I also hoped to see if the tone of the series changes with each book. My initial assumptions were that the series would get progressively more negative and that there would be some form of linear relationship between a series sentiment and its rating.
 
-For my approach, I parsed the first 9 PDFs of the series and tokenized each word to match to a numerical positive or negative sentiment (from -5 to 5). Then, I plotted the sentiment progression by page for each book and gathered the initial set of summary statistics (mean, standard deviation etc.) 
+For my approach, I parsed the first 9 PDFs of the series and tokenized each word to match to a numerical positive or negative sentiment (from -5 to 5). Then, I plotted the sentiment progression by page for each book and gathered the initial set of summary statistics (mean, standard deviation etc.). Using linear regression, I found a near zero linear relationship between the page of a book and its corresponding sentiment value.
 
 I compared the mean sentiment of each book to its respective Goodreads rating using linear regression. While the p-value (.04803) is less than .05, the adjusted R-squared is .3711 and thus there seems to be a very weak linear relationship between the mean sentiment of a book and its Goodreads rating with little statistical significance.
 
-Further analysis can be done to strengthen my conclusion by including more books in the series in the analysis as well as exploring other forms of sentiment analysis with more qualitative characteristics (anger, sadness, etc.). There were also some limitations while parsing the PDFs that could be improved upon to evaluate how the AFINN lexicon dealt with fantasy terms that may have a different connotation within the novels.
+Further analysis can be done to strengthen my conclusion by including more books in the series as well as exploring other forms of sentiment analysis with more qualitative characteristics (anger, sadness, etc.). There were also some limitations while parsing the PDFs that could improve how the AFINN lexicon deals with fantasy terms that may have a different connotation within the novels.
 
 
 # Data Preparation
@@ -187,7 +187,7 @@ With the dataframe of all the selected books and associated words I can apply se
 
 ## AFINN
 
-I pull
+I pull in the sentiment using the AFINN lexicon to get a quantitative value of a word's positive or negative sentiment.
 
 
 ```r
@@ -227,18 +227,24 @@ glimpse(all_books_afinn)
 
 # Statistical Analysis
 
+I want to analyze my dependent variables (goodreads_rating) and its relationship to the independent variable sentiment_mean which is the mean of all the words sentiment value for each book and its relationship to the sentiment progression of a book - i.e. does a book become progressively more or less positive.
+
 ## Aggregated Statistics
 
-I create a set of summary statistics for each book and word sentiment
+I create a set of summary statistics for each book and its sentiment.
 
 
 ```r
-all_books_stats <- all_books_afinn %>% group_by(book) %>% summarize(num_words = n(), sentiment_stdev = sd(value), sentiment_mean = mean(value), sentiment_min = min(value), sentiment_max = max(value))
+#add positive and negative classifiers for chi square test
+all_books_afinn <- all_books_afinn %>% mutate (positive = if_else(value > 0, 1, 0), negative = if_else(value < 0, 1, 0))
+
+all_books_stats <- all_books_afinn %>% group_by(book) %>% summarize(num_words = n(), sentiment_stdev = sd(value), sentiment_mean = mean(value), sentiment_min = min(value), sentiment_max = max(value), positive = sum(positive), negative = sum(negative))
+
 all_books_stats
 ```
 
 ```
-## # A tibble: 9 x 6
+## # A tibble: 9 x 8
 ##   book      num_words sentiment_stdev sentiment_mean sentiment_min sentiment_max
 ##   <chr>         <int>           <dbl>          <dbl>         <dbl>         <dbl>
 ## 1 A Crown ~     10928            1.91         -0.421            -4             5
@@ -250,8 +256,11 @@ all_books_stats
 ## 7 The Path~      8634            1.89         -0.408            -4             4
 ## 8 The Shad~     14520            1.89         -0.479            -5             5
 ## 9 Winter’s~      9146            1.92         -0.402            -5             4
+## # ... with 2 more variables: positive <dbl>, negative <dbl>
 ```
 
+
+## Page Linear Regression Model
 
 Here we can see that the books sentiment stay about the same for each book in the series as well as for each page in a book.
 
@@ -279,9 +288,37 @@ ggplot(all_books_afinn, aes(x=book,y=value)) + geom_boxplot() + coord_flip()
 
 ![](Torres_Project_files/figure-html/unnamed-chunk-8-3.png)<!-- -->
 
-## Linear Regression Model
+```r
+page_model<-lm(value~page,data=all_books_afinn_pages)
 
-I combine the ratings with the summary statistics dataframe to provide the necessary information for the linear regression model.
+summary(page_model)
+```
+
+```
+## 
+## Call:
+## lm(formula = value ~ page, data = all_books_afinn_pages)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -91.968  -8.973   1.076  11.047  52.085 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) -1.310e+01  5.285e-01 -24.787   <2e-16 ***
+## page         2.074e-04  2.259e-03   0.092    0.927    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 16.2 on 3419 degrees of freedom
+## Multiple R-squared:  2.465e-06,	Adjusted R-squared:  -0.00029 
+## F-statistic: 0.008429 on 1 and 3419 DF,  p-value: 0.9269
+```
+Our model shows that there is no linear relationship between what page you're on in a book and the associated sentiment value of that page.
+
+## Sentiment Mean Linear Regression Model
+
+I combine the ratings with the summary statistics dataframe to provide the necessary information for the sentiment mean linear regression model.
 
 
 ```r
@@ -290,7 +327,7 @@ combined_books
 ```
 
 ```
-## # A tibble: 9 x 9
+## # A tibble: 9 x 11
 ##   book      num_words sentiment_stdev sentiment_mean sentiment_min sentiment_max
 ##   <chr>         <int>           <dbl>          <dbl>         <dbl>         <dbl>
 ## 1 A Crown ~     10928            1.91         -0.421            -4             5
@@ -302,8 +339,8 @@ combined_books
 ## 7 The Path~      8634            1.89         -0.408            -4             4
 ## 8 The Shad~     14520            1.89         -0.479            -5             5
 ## 9 Winter’s~      9146            1.92         -0.402            -5             4
-## # ... with 3 more variables: goodreads_rating <dbl>, num_ratings <int>,
-## #   book_num <int>
+## # ... with 5 more variables: positive <dbl>, negative <dbl>,
+## #   goodreads_rating <dbl>, num_ratings <int>, book_num <int>
 ```
 
 The key assumptions for a simple linear regression model are:
@@ -354,7 +391,9 @@ summary(model)
 ## F-statistic: 5.722 on 1 and 7 DF,  p-value: 0.04803
 ```
 
-With a low adjusted R-squared at .3711, the low p-value (.04803) is not significant. Our model is also pretty limited based on the small sample size of books. Further analysis would include up to 15 books and provide some more confidence in our model, as well as potential expansion to other high fantasy series to see if the trend holds.
+With a low adjusted R-squared at .3711, the low p-value (.04803) is not significant. The model is also pretty limited based on the small sample size of books. Further analysis would include up to 15 books and provide some more confidence in the model, as well as potential expansion to other high fantasy series to see if the trend holds. 
+
+Other limitations are that I used word sentiment instead of sentence sentiment. It's possible that the overall sentiment of a book could change if I used a sentence token over a word token. For example, the word `gray` is ranked at -1 in the AFINN lexicon, but it could be in a neutral context when describing a characters eyes. There could also be a difference if I used a chapter separation instead of page separation when analyzing a books sentiment over the course of the book. These could all be future extenstions of the analysis.
 
 # Citations
 

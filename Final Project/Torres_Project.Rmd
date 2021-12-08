@@ -115,7 +115,7 @@ glimpse(all_books_afinn)
 
 # Statistical Analysis
 
-I want to analyze my dependent variables (goodreads_rating) and its relationship to the independent variable sentiment_mean which is the mean of all the words sentiment value for each book and its relationship to the sentiment progression of a book - i.e. does a book become progressively more or less positive.
+I want to analyze my dependent variable (goodreads_rating) and its relationship to the independent variable sentiment mean which is the mean of all the words sentiment value for each book and its relationship to the sentiment progression of a book - i.e. does a book become progressively more or less positive with a linear relationship to page number.
 
 ## Aggregated Statistics
 
@@ -126,8 +126,31 @@ I create a set of summary statistics for each book and its sentiment.
 all_books_afinn <- all_books_afinn %>% mutate (positive = if_else(value > 0, 1, 0), negative = if_else(value < 0, 1, 0))
 
 all_books_stats <- all_books_afinn %>% group_by(book) %>% summarize(num_words = n(), sentiment_stdev = sd(value), sentiment_mean = mean(value), sentiment_min = min(value), sentiment_max = max(value), positive = sum(positive), negative = sum(negative))
+```
 
+### Summary Statistics
+
+```{r}
 all_books_stats
+```
+
+
+```{r}
+word_count <- all_books_afinn %>% group_by(book) %>% count(word, sort= TRUE)
+word_count_total <- all_books_afinn %>% group_by(word) %>% summarize(count = n()) %>% arrange(desc(count))
+
+```
+
+### Top 10 words across books
+
+```{r}
+word_count
+```
+
+### Top 30 words
+
+```{r}
+wordcloud(word_count_total$word, word_count_total$count, max.words = 30)
 ```
 
 

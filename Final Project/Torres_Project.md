@@ -227,7 +227,7 @@ glimpse(all_books_afinn)
 
 # Statistical Analysis
 
-I want to analyze my dependent variables (goodreads_rating) and its relationship to the independent variable sentiment_mean which is the mean of all the words sentiment value for each book and its relationship to the sentiment progression of a book - i.e. does a book become progressively more or less positive.
+I want to analyze my dependent variable (goodreads_rating) and its relationship to the independent variable sentiment mean which is the mean of all the words sentiment value for each book and its relationship to the sentiment progression of a book - i.e. does a book become progressively more or less positive with a linear relationship to page number.
 
 ## Aggregated Statistics
 
@@ -239,7 +239,12 @@ I create a set of summary statistics for each book and its sentiment.
 all_books_afinn <- all_books_afinn %>% mutate (positive = if_else(value > 0, 1, 0), negative = if_else(value < 0, 1, 0))
 
 all_books_stats <- all_books_afinn %>% group_by(book) %>% summarize(num_words = n(), sentiment_stdev = sd(value), sentiment_mean = mean(value), sentiment_min = min(value), sentiment_max = max(value), positive = sum(positive), negative = sum(negative))
+```
 
+### Summary Statistics
+
+
+```r
 all_books_stats
 ```
 
@@ -260,6 +265,47 @@ all_books_stats
 ```
 
 
+
+```r
+word_count <- all_books_afinn %>% group_by(book) %>% count(word, sort= TRUE)
+word_count_total <- all_books_afinn %>% group_by(word) %>% summarize(count = n()) %>% arrange(desc(count))
+```
+
+### Top 10 words across books
+
+
+```r
+word_count
+```
+
+```
+## # A tibble: 9,268 x 3
+## # Groups:   book [9]
+##    book                 word      n
+##    <chr>                <chr> <int>
+##  1 The Lord of Chaos    hard    287
+##  2 The Fires of Heaven  hard    250
+##  3 The Shadow Rising    hard    229
+##  4 The Lord of Chaos    dead    200
+##  5 The Eye Of The World hard    193
+##  6 Winter’s Heart       hard    191
+##  7 The Lord of Chaos    smile   190
+##  8 The Shadow Rising    stop    185
+##  9 The Lord of Chaos    gray    181
+## 10 The Eye Of The World fire    177
+## # ... with 9,258 more rows
+```
+
+### Top 30 words
+
+
+```r
+wordcloud(word_count_total$word, word_count_total$count, max.words = 30)
+```
+
+![](Torres_Project_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+
+
 ## Page Linear Regression Model
 
 Here we can see that the books sentiment stay about the same for each book in the series as well as for each page in a book.
@@ -272,7 +318,7 @@ ggplot(all_books_afinn_pages, aes(x=page,y=value)) + geom_point() + geom_smooth(
 ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
 ```
 
-![](Torres_Project_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+![](Torres_Project_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
 ```r
 ggplot(all_books_afinn, aes(page, value, fill = book)) +
@@ -280,13 +326,13 @@ ggplot(all_books_afinn, aes(page, value, fill = book)) +
   facet_wrap(~book, ncol = 3, scales = "free_x")
 ```
 
-![](Torres_Project_files/figure-html/unnamed-chunk-8-2.png)<!-- -->
+![](Torres_Project_files/figure-html/unnamed-chunk-12-2.png)<!-- -->
 
 ```r
 ggplot(all_books_afinn, aes(x=book,y=value)) + geom_boxplot() + coord_flip()
 ```
 
-![](Torres_Project_files/figure-html/unnamed-chunk-8-3.png)<!-- -->
+![](Torres_Project_files/figure-html/unnamed-chunk-12-3.png)<!-- -->
 
 ```r
 page_model<-lm(value~page,data=all_books_afinn_pages)
@@ -361,7 +407,7 @@ combined_books %>% ggplot(aes(x=sentiment_mean, y = goodreads_rating)) + geom_po
 ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
 ```
 
-![](Torres_Project_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+![](Torres_Project_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
 
 
 ```r

@@ -1,0 +1,209 @@
+---
+title: "WoT Sentiment Analysis"
+author: "Santiago Torres"
+date: "12/5/2021"
+output: 
+  rmdformats::robobook:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=TRUE, results='hide', warning=FALSE, message=FALSE}
+library(tm)
+library(pdftools)
+library(here)
+library(tidyverse)
+library(tidytext)
+library(wordcloud)
+library(reshape2)
+library(ggplot2)
+```
+
+# Abstract
+
+As an avid reader, The Wheel of Time is one of my favorite high fantasy series. After learning about sentiment analysis in the DATA607 class, I was inspired to apply sentiment analysis to the first 9 books in the Wheel of Time series to compare the overall sentiment of each book to its related Goodreads rating and determine any correlation. I also hoped to see if the tone of the series changes with each book. My initial assumptions were that the series would get progressively more negative and that there would be some form of linear relationship between a series sentiment and its rating.
+
+For my approach, I parsed the first 9 PDFs of the series and tokenized each word to match to a numerical positive or negative sentiment (from -5 to 5). Then, I plotted the sentiment progression by page for each book and gathered the initial set of summary statistics (mean, standard deviation etc.). Using linear regression, I found a near zero linear relationship between the page of a book and its corresponding sentiment value.
+
+I compared the mean sentiment of each book to its respective Goodreads rating using linear regression. While the p-value (.04803) is less than .05, the adjusted R-squared is .3711 and thus there seems to be a very weak linear relationship between the mean sentiment of a book and its Goodreads rating with little statistical significance.
+
+Further analysis can be done to strengthen my conclusion by including more books in the series as well as exploring other forms of sentiment analysis with more qualitative characteristics (anger, sadness, etc.). There were also some limitations while parsing the PDFs that could improve how the AFINN lexicon deals with fantasy terms that may have a different connotation within the novels.
+
+
+# Data Preparation
+
+
+## PDF Scraping
+
+Here I build the path to all the pdfs stored in my project folder and call the `pdf_text` function to convert the PDFs into a character vector.
+
+```{r, warning=FALSE}
+path_to_pdfs <- here("WoT Sentiment Analysis","WoT")
+
+book_files <- list.files(path = path_to_pdfs, pattern = "pdf$")
+
+# add relative path to file list
+complete_path <- function(x) { str_c(path_to_pdfs, "/",x)}
+files <- complete_path(book_files)
+
+# read in all pdfs in the WoT folder
+wot <- suppressMessages(lapply(files, pdf_text))
+```
+
+
+I created a function `pdf_parse` to parse out the titles from the text, unnest words to a text column and remove stop words (and, the, etc.) using the default `stop_word` dataset.
+
+```{r}
+pdf_parse <- function(list) {
+  data(stop_words)
+  title <- list[1] %>% str_split("\n")
+  title <- title[[1]][1]
+  pdf_book <- tibble(book = title, page=1:length(list), text = list)
+  pdf_book <- pdf_book %>% unnest_tokens(word, text)
+  pdf_book <- pdf_book %>% anti_join(stop_words)
+}
+
+# parse all pdfs
+
+all_books <- lapply(wot, pdf_parse)
+
+glimpse(all_books)
+```
+
+Now I have a list of all the books in a similar dataframe format that I can bind together
+
+```{r}
+# bind all dataframes together
+all_books <- all_books %>% reduce(rbind)
+
+all_books
+```
+
+## CSV Book Ratings
+
+Here I read in the ratings from a csv to store for use after I perform sentiment analysis.
+
+```{r}
+csv_url <- here("WoT Sentiment Analysis", "book_ratings.csv")
+
+ratings <- read.csv(csv_url)
+
+ratings
+```
+
+With the dataframe of all the selected books and associated words I can apply sentiment analysis to gather positive or negative values using the AFINN lexicon
+
+# Sentiment Analysis
+
+## AFINN
+
+I pull in the sentiment using the AFINN lexicon to get a quantitative value of a word's positive or negative sentiment.
+
+```{r}
+afinn <- get_sentiments("afinn") # -5 to 5
+
+all_books_afinn <- all_books %>% inner_join(afinn)
+
+
+all_books_afinn_pages <- all_books %>% inner_join(afinn) %>% group_by(book,page) %>% summarize(value = sum(value))
+
+glimpse(all_books_afinn)
+```
+
+# Statistical Analysis
+
+I want to analyze my dependent variable (goodreads_rating) and its relationship to the independent variable sentiment mean which is the mean of all the words sentiment value for each book and its relationship to the sentiment progression of a book - i.e. does a book become progressively more or less positive with a linear relationship to page number.
+
+## Aggregated Statistics
+
+I create a set of summary statistics for each book and its sentiment.
+
+```{r}
+#add positive and negative classifiers for chi square test
+all_books_afinn <- all_books_afinn %>% mutate (positive = if_else(value > 0, 1, 0), negative = if_else(value < 0, 1, 0))
+
+all_books_stats <- all_books_afinn %>% group_by(book) %>% summarize(num_words = n(), sentiment_stdev = sd(value), sentiment_mean = mean(value), sentiment_min = min(value), sentiment_max = max(value), positive = sum(positive), negative = sum(negative))
+```
+
+### Summary Statistics
+
+```{r}
+all_books_stats
+```
+
+
+```{r}
+word_count <- all_books_afinn %>% group_by(book) %>% count(word, sort= TRUE)
+word_count_total <- all_books_afinn %>% group_by(word) %>% summarize(count = n()) %>% arrange(desc(count))
+
+```
+
+### Top 10 words across books
+
+```{r}
+word_count
+```
+
+### Top 30 words
+
+```{r}
+wordcloud(word_count_total$word, word_count_total$count, max.words = 30)
+```
+
+
+## Page Linear Regression Model
+
+Here we can see that the books sentiment stay about the same for each book in the series as well as for each page in a book.
+```{r}
+ggplot(all_books_afinn_pages, aes(x=page,y=value)) + geom_point() + geom_smooth() + facet_wrap(~book, scales = "free_x")
+
+ggplot(all_books_afinn, aes(page, value, fill = book)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~book, ncol = 3, scales = "free_x")
+
+ggplot(all_books_afinn, aes(x=book,y=value)) + geom_boxplot() + coord_flip()
+
+page_model<-lm(value~page,data=all_books_afinn_pages)
+
+summary(page_model)
+```
+Our model shows that there is no linear relationship between what page you're on in a book and the associated sentiment value of that page.
+
+## Sentiment Mean Linear Regression Model
+
+I combine the ratings with the summary statistics dataframe to provide the necessary information for the sentiment mean linear regression model.
+
+```{r}
+combined_books <- inner_join(all_books_stats, ratings, by = "book")
+combined_books
+```
+
+The key assumptions for a simple linear regression model are:
+
+1.	Linearity: The relationship between X and the mean of Y is linear
+2.	Homoscedasticity: The variance of the residual is the same for any value of X
+3.	Independence: Observations are independent of each other
+4.	Normality: For any fixed value of X, Y is normally distributed
+
+The dataset roughly meets all of those criteria although it seems like there might be an outlier book with a high rating and a higher sentiment_mean.
+
+```{r}
+combined_books %>% ggplot(aes(x=sentiment_mean, y = goodreads_rating)) + geom_point() + geom_smooth()
+```
+
+```{r}
+model<-lm(goodreads_rating~sentiment_mean,data=combined_books)
+
+summary(model)
+```
+
+With a low adjusted R-squared at .3711, the low p-value (.04803) is not significant. The model is also pretty limited based on the small sample size of books. Further analysis would include up to 15 books and provide some more confidence in the model, as well as potential expansion to other high fantasy series to see if the trend holds. 
+
+Other limitations are that I used word sentiment instead of sentence sentiment. It's possible that the overall sentiment of a book could change if I used a sentence token over a word token. For example, the word `gray` is ranked at -1 in the AFINN lexicon, but it could be in a neutral context when describing a characters eyes. There could also be a difference if I used a chapter separation instead of page separation when analyzing a book's sentiment over the course of the book. These could all be future extensions of the analysis.
+
+# Citations
+
+Finn Årup Nielsen A new ANEW: Evaluation of a word list for sentiment analysis in microblogs. Proceedings of the ESWC2011 Workshop on 'Making Sense of Microposts': Big things come in small packages 718 in CEUR Workshop Proceedings 93-98. 2011 May. http://arxiv.org/abs/1103.2903.
